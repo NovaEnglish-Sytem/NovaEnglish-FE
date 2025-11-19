@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+
+/* Utility: opt-in scrollbar gutter to avoid layout shift on selected layouts only */
+.scrollbar-stable {
+  scrollbar-gutter: stable;
+}
+
+
+/* ================= Custom scrollbar for Image Modal ================= */
+.image-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.image-modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.image-modal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.image-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+/* ================= End custom scrollbar ============= */
+
+/* Footer Contact highlight/pulse */
+@keyframes footer-contact-pulse-border {
+  0% {
+    border-color: #22c55e;
+  } /* Tailwind emerald-500-ish */
+  50% {
+    border-color: transparent;
+  }
+  100% {
+    border-color: #22c55e;
+  }
+}
+
+.footer-contact-pulse {
+  animation: footer-contact-pulse-border 0.8s ease-in-out 3;
+}
+
+.footer-contact-glow {
+  border-color: #22c55e !important;
+}
+
+/* Disable native password reveal/clear controls so only app's custom toggle is used */
+/* Edge/IE */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* WebKit (conservative; some versions expose decoration container) */
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none;
+}
+
+/* ================= CKEditor integration tweaks ================= */
+/* Ensure consistent editor height without flicker on focus */
+.story-editor .ck-editor__editable,
+.story-editor .ck-content {
+  min-height: 380px;
+}
+.instruction-editor .ck-editor__editable,
+.instruction-editor .ck-content {
+  min-height: 150px;
+}
+
+/* Show list markers and proper spacing inside CKEditor (editor area) */
+.ck-content ul {
+  list-style: disc;
+  margin-left: 1.25rem;
+  padding-left: 0.25rem;
+}
+.ck-content ol {
+  list-style: decimal;
+  margin-left: 1.25rem;
+  padding-left: 0.25rem;
+}
+
+/* Improve table visibility inside CKEditor */
+/* Center tables when desired and prevent stretching in editor */
+.ck-content figure.table {
+  margin-left: auto;
+  margin-right: auto;
+}
+.ck-content table {
+  width: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ck-content th,
+.ck-content td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+}
+.ck-content thead th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+/* Content styles so Tailwind preflight doesn't hide bullets/tables in preview */
+.editor-content ul {
+  list-style: disc;
+  margin-left: 1.25rem; /* ~pl-5 */
+  padding-left: 0.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.editor-content ol {
+  list-style: decimal;
+  margin-left: 1.25rem;
+  padding-left: 0.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.editor-content li {
+  margin: 0.125rem 0;
+}
+/* Center tables and prevent stretching in preview */
+.editor-content figure.table {
+  margin-left: auto;
+  margin-right: auto;
+}
+.editor-content table {
+  width: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.editor-content th,
+.editor-content td {
+  border: 1px solid #e5e7eb; /* gray-200 */
+  padding: 0.5rem;
+}
+.editor-content thead th {
+  background-color: #f3f4f6; /* gray-100 */
+  font-weight: 600;
+}
+.editor-content p {
+  margin: 0.25rem 0;
+}
+/* ================================================================= */
+
+/* Force green color for disabled radio buttons in preview */
+input[type="radio"]:disabled {
+  opacity: 1 !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  background-color: white;
+  cursor: default;
+  position: relative;
+}
+
+input[type="radio"]:disabled:checked {
+  border-color: #007a33;
+  background-color: white;
+}
+
+input[type="radio"]:disabled:checked::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #007a33;
+}

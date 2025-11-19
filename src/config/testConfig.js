@@ -1,0 +1,19 @@
+export const TEST_CONFIG = {
+  AUTOSAVE: {
+    DEBOUNCE_MS: 500,
+    INITIAL_SYNC_MS: 15000,
+    PERIODIC_SYNC_MS: 90 * 1000,
+  },
+  MODAL: {
+    COUNTDOWN_START: 5,
+    COUNTDOWN_INTERVAL_MS: 1000,
+    AUTO_CONFIRM_MS: 5000,
+  },
+  MEDIA: {
+    MAX_AUDIO_PLAYS: 2,
+  },
+  CLEANUP: {
+    STRICTMODE_GUARD_MS: 1500,
+  },
+}
+export default TEST_CONFIG;
