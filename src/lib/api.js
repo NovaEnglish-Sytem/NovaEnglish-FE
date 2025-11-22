@@ -28,17 +28,21 @@ const BASE_URL = getBaseUrl()
 let authInvalidHandler = null
 export const setAuthInvalidHandler = (fn) => { authInvalidHandler = typeof fn === 'function' ? fn : null }
 
+// Single in-flight refresh promise to deduplicate concurrent 401 refresh attempts
+let refreshPromise = null
+
 async function apiFetch(url, options = {}) {
   const isForm = typeof FormData !== 'undefined' && options && options.body instanceof FormData
   const headers = {
     ...(isForm ? {} : { 'Content-Type': 'application/json' }),
     ...(options?.headers || {}),
   }
+  const { __skipRefresh, ...restOptions } = options || {}
   const config = {
     credentials: 'include',
     headers,
     cache: 'no-store',
-    ...options,
+    ...restOptions,
   }
 
   const fullUrl = url.startsWith('/') ? `${BASE_URL}${url}` : url
@@ -56,14 +60,53 @@ async function apiFetch(url, options = {}) {
     } catch (_) {
       data = null
     }
-    // Notify auth invalidation globally for 401 or explicit session invalidation code
+
     if (!response.ok) {
       const code = (data && typeof data === 'object') ? (data.code || data.error || data.message) : null
-      const isSessionInvalid = response.status === 401 || String(code).toUpperCase() === 'SESSION_INVALIDATED'
-      if (isSessionInvalid && typeof authInvalidHandler === 'function') {
+      const upperCode = String(code).toUpperCase()
+
+      // SESSION_INVALIDATED: do NOT try refresh, immediately notify handler
+      const isSessionInvalid = upperCode === 'SESSION_INVALIDATED'
+
+      // 401 (not SESSION_INVALIDATED) – try silent refresh once unless explicitly skipped
+      const shouldTryRefresh = response.status === 401 && !isSessionInvalid && !__skipRefresh
+
+      if (shouldTryRefresh) {
+        try {
+          // Deduplicate refresh calls: share a single in-flight promise
+          if (!refreshPromise) {
+            refreshPromise = (async () => {
+              try {
+                return await fetch(`${BASE_URL}/api/auth/refresh`, {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: { 'Content-Type': 'application/json' },
+                  cache: 'no-store',
+                })
+              } finally {
+                refreshPromise = null
+              }
+            })()
+          }
+
+          const refreshRes = await refreshPromise
+
+          // If refresh succeeded, retry original request once with skip flag
+          if (refreshRes.ok) {
+            return apiFetch(url, { ...restOptions, headers, __skipRefresh: true })
+          }
+        } catch (_) {
+          // Ignore refresh errors – fall through to invalidation handler
+        }
+      }
+
+      // At this point either refresh was not attempted, or it failed – propagate auth invalidation
+      const finalIsAuthError = response.status === 401 || isSessionInvalid
+      if (finalIsAuthError && typeof authInvalidHandler === 'function') {
         try { authInvalidHandler({ status: response.status, code, data }) } catch (_) {}
       }
     }
+
     return { ok: response.ok, data, status: response.status, headers: response.headers, error: response.ok ? null : (data?.message || `HTTP ${response.status}`) }
   } catch (_) {
     // Network error: silent, non-throwing

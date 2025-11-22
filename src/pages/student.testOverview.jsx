@@ -6,6 +6,7 @@ import { testApi } from '../lib/api.js'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import { useActiveTestSession } from '../hooks/useActiveTestSession.js'
+import ConfirmDialog from '../components/molecules/ConfirmDialog.jsx'
 
 
 export const StudentTestOverview = () => {
@@ -15,6 +16,8 @@ export const StudentTestOverview = () => {
   const [error, setError] = useState(null)
   const [sections, setSections] = useState([])
   const [starting, setStarting] = useState(false)
+  const [packageChanged, setPackageChanged] = useState(false)
+  const [pendingCheckpoint, setPendingCheckpoint] = useState(null)
   const countdownRef = useRef(null)
   
   // Check for active test session and auto-submit expired sessions
@@ -34,6 +37,7 @@ export const StudentTestOverview = () => {
   const recordId = s?.recordId || null
   const preparedCategories = Array.isArray(s?.preparedCategories) ? s.preparedCategories : []
   const incomingCategoryNames = s?.categoryNames || {}
+  const incomingPackageChanged = Boolean(s?.packageChanged)
   
 
   const handleExit = () => {
@@ -41,6 +45,15 @@ export const StudentTestOverview = () => {
     try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
     navigate(ROUTES.dashboardStudent)
   }
+
+  // On first mount, if we were redirected here from a draft/unpublish flow with
+  // packageChanged=true, open the modal once.
+  useEffect(() => {
+    if (incomingPackageChanged) {
+      setPackageChanged(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     // Validate that test overview was accessed through proper flow
@@ -53,49 +66,70 @@ export const StudentTestOverview = () => {
     }
 
     // Build sections from prepared data
-    // Map categoryIds to get proper order and mark completed ones
-    const remainingSet = new Set(preparedCategories.map(pc => pc.categoryId))
-    // Build a name map so completed-but-missing categories still show their names
+    // Map categoryIds to get proper order and mark completed / unavailable ones
+    const preparedByCategory = new Map(
+      preparedCategories.map((pc) => [String(pc.categoryId), pc])
+    )
+    // Build a name map so completed / unavailable categories still show their names
     const categoryNames = {
       ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
       ...Object.fromEntries(preparedCategories.map(pc => [String(pc.categoryId), pc.categoryName]))
     }
     const sectionData = categoryIds.map(catId => {
-      // Completed if explicitly completed OR not in remaining prepared set (checkpoint)
-      const isCompleted = completedCategoryIds.includes(catId) || (!remainingSet.has(catId) && checkpoint)
-      
-      // Find prepared category data (only exists for remaining categories)
-      const preparedCat = preparedCategories.find(pc => String(pc.categoryId) === String(catId))
-      
+      const key = String(catId)
+      const preparedCat = preparedByCategory.get(key)
+      const isExplicitCompleted = completedCategoryIds.includes(catId)
+
       if (preparedCat) {
+        // Category has prepared data (either remaining or already completed in this record)
         return {
           title: preparedCat.categoryName,
           questions: preparedCat.totalQuestions,
           minutes: preparedCat.durationMinutes,
-          completed: isCompleted
+          completed: isExplicitCompleted,
+          unavailable: false,
         }
       }
-      
-      if (isCompleted) {
-        // Completed category: show placeholder; totals will exclude completed via panel logic
+
+      if (isExplicitCompleted) {
+        // Completed category without current prepared data: show as completed placeholder
         return {
-          title: categoryNames[String(catId)] || 'Completed',
+          title: categoryNames[key] || 'Completed',
           questions: 'Completed',
           minutes: 'Completed',
-          completed: true
+          completed: true,
+          unavailable: false,
         }
       }
-      
-      return null
+
+      // Category is in overview list but has no prepared package and is not completed:
+      // treat as unavailable (e.g., package was unpublished after prepare)
+      return {
+        title: categoryNames[key] || 'Packet not found',
+        questions: 'Packet not found',
+        minutes: 'Packet not found',
+        completed: false,
+        unavailable: true,
+      }
     }).filter(Boolean)
     
+    // If all categories are unavailable, redirect to dashboard directly
+    const hasAvailable = sectionData.some(s => !s.unavailable && !s.completed)
+    const hasUnavailable = sectionData.some(s => s.unavailable)
+
+    if (!hasAvailable && hasUnavailable) {
+      try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
+      navigate(ROUTES.studentDashboard, { replace: true })
+      return
+    }
+
     setSections(sectionData)
     setLoading(false)
     
     return () => { 
       if (countdownRef.current) clearInterval(countdownRef.current)
     }
-  }, [navigate])
+  }, [navigate, categoryIds, completedCategoryIds, preparedCategories, incomingCategoryNames])
 
   const handleStart = async () => {
     if (starting) return
@@ -108,98 +142,139 @@ export const StudentTestOverview = () => {
     }
     
     try {
-      // Determine next category to start based on original order and completed
+      // Determine next category to start based on original order and completed,
+      // and ensure it still has prepared data (skip unavailable categories)
       const completedSet = new Set(completedCategoryIds)
-      const nextCategoryId = (categoryIds || []).find(id => !completedSet.has(id))
-      
-      // Find prepared data for that category (only remaining categories are in preparedCategories)
-      const nextPrepared = preparedCategories.find(pc => pc.categoryId === nextCategoryId) || preparedCategories[0]
-      
+      const preparedByCategory = new Map(
+        preparedCategories.map((pc) => [pc.categoryId, pc])
+      )
+
+      const nextPrepared = (categoryIds || [])
+        .map((id) => preparedByCategory.get(id))
+        .find((pc) => pc && !completedSet.has(pc.categoryId))
+
       if (!nextPrepared) {
         setError('No prepared test data found')
+        setStarting(false)
         return
       }
       
-      try {
-        // Build testMeta for cross-browser support
-        const testMeta = {
-          categoryIds,
-          completedCategoryIds,
-          recordId,
-          preparedCategories,
-          categoryNames: {
-            ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
-            ...Object.fromEntries(preparedCategories.map(pc => [String(pc.categoryId), pc.categoryName]))
-          },
-          mode: categoryIds.length > 1 ? 'multiple' : 'single',
-          currentCategoryId: nextPrepared.categoryId  // ✅ Include current category
-        }
-        
-        // Call start API with prepared data + testMeta for cross-browser support
-        const res = await testApi.start(
-          nextPrepared.packageId,
-          nextPrepared.categoryId,
-          nextPrepared.turnNumber,
-          recordId,
-          preparedCategories, // Pass all prepared categories
-          testMeta // Pass complete testMeta
-        )
-        
-        const attemptId = res?.data?.attempt?.id
-        const sessionToken = res?.data?.attempt?.sessionToken
-        
-        if (!attemptId) {
-          setError('Failed to start test')
+      // Build testMeta for cross-browser support
+      const testMeta = {
+        categoryIds,
+        completedCategoryIds,
+        recordId,
+        preparedCategories,
+        categoryNames: {
+          ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
+          ...Object.fromEntries(preparedCategories.map(pc => [String(pc.categoryId), pc.categoryName]))
+        },
+        mode: categoryIds.length > 1 ? 'multiple' : 'single',
+        currentCategoryId: nextPrepared.categoryId  // ✅ Include current category
+      }
+      
+      // Call start API with prepared data + testMeta for cross-browser support
+      const res = await testApi.start(
+        nextPrepared.packageId,
+        nextPrepared.categoryId,
+        nextPrepared.turnNumber,
+        recordId,
+        preparedCategories, // Pass all prepared categories
+        testMeta // Pass complete testMeta
+      )
+
+      if (!res?.ok) {
+        const code = String(res?.data?.code || res?.data?.error || '').toUpperCase()
+        const msg = String(res?.data?.message || '')
+        const isDraft = res.status === 409 && (code === 'PACKAGE_DRAFT' || /package is in draft/i.test(msg))
+        const isNotFound = res.status === 404
+
+        if (isDraft || isNotFound) {
+          // Current package is no longer available. Remove it and decide where to go.
+          const failedCategoryId = nextPrepared.categoryId
+          const remainingPrepared = preparedCategories.filter(pc => pc.categoryId !== failedCategoryId)
+
+          if (remainingPrepared.length === 0) {
+            // No more categories to do (single, or all unpublished/finished) -> go to dashboard
+            try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
+            navigate(ROUTES.studentDashboard, { replace: true })
+            setStarting(false)
+            return
+          }
+
+          // Still have other categories: offer to continue via modal
+          const checkpointPayload = {
+            mode: categoryIds.length > 1 ? 'multiple' : 'single',
+            categoryIds,
+            completedCategoryIds,
+            checkpoint: true,
+            recordId,
+            preparedCategories: remainingPrepared,
+            categoryNames: {
+              ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
+              ...Object.fromEntries(remainingPrepared.map(pc => [String(pc.categoryId), pc.categoryName]))
+            },
+          }
+          try { sessionStorage.setItem('test_overview_checkpoint', JSON.stringify(checkpointPayload)) } catch {}
+          setPendingCheckpoint(checkpointPayload)
+          setPackageChanged(true)
           setStarting(false)
           return
         }
-        
-        // Handle active session conflict
-        if (res?.data?.activeAttemptId && res?.data?.redirectTo) {
-          navigate(ROUTES.studentTest.replace(':attemptId', res.data.activeAttemptId), { replace: true })
-          return
-        }
-        
-        // Store session token
-        if (sessionToken) {
-          import('../utils/testStorage.js').then(({ TestStorage }) => {
-            TestStorage.saveSessionToken(attemptId, sessionToken)
-          })
-        }
-        
-        // Clear checkpoint since we're leaving overview
-        try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
-        // Navigate to test page with attemptId
-        navigate(ROUTES.studentTest.replace(':attemptId', attemptId), { 
-          replace: true,
-          state: { 
-            categoryIds, 
-            completedCategoryIds,
-            recordId,
-            mode: categoryIds.length > 1 ? 'multiple' : 'single',
-            preparedCategories, // Pass to next test if multiple categories
-            currentCategoryId: nextPrepared.categoryId, // Needed for checkpoint completion on timeout
-            categoryNames: {
-              ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
-              ...Object.fromEntries(preparedCategories.map(pc => [String(pc.categoryId), pc.categoryName]))
-            }
-          }
-        })
-      } catch (e) {
-        // Handle 403 error (active session exists)
-        if (e?.response?.status === 403 && e?.response?.data?.activeAttemptId) {
-          navigate(ROUTES.studentTest.replace(':attemptId', e.response.data.activeAttemptId), { replace: true })
-          return
-        }
-        
-        setError(e?.message || 'Failed to start test')
+
+        // Other errors: show generic error state
+        setError(res?.data?.message || 'Failed to start test')
         setStarting(false)
+        return
       }
+
+      const attemptId = res?.data?.attempt?.id
+      const sessionToken = res?.data?.attempt?.sessionToken
+      
+      if (!attemptId) {
+        setError('Failed to start test')
+        setStarting(false)
+        return
+      }
+      
+      // Handle active session conflict
+      if (res?.data?.activeAttemptId && res?.data?.redirectTo) {
+        navigate(ROUTES.studentTest.replace(':attemptId', res.data.activeAttemptId), { replace: true })
+        return
+      }
+      
+      // Store session token
+      if (sessionToken) {
+        import('../utils/testStorage.js').then(({ TestStorage }) => {
+          TestStorage.saveSessionToken(attemptId, sessionToken)
+        })
+      }
+      
+      // Clear checkpoint since we're leaving overview
+      try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
+      // Navigate to test page with attemptId
+      navigate(ROUTES.studentTest.replace(':attemptId', attemptId), { 
+        replace: true,
+        state: { 
+          categoryIds, 
+          completedCategoryIds,
+          recordId,
+          mode: categoryIds.length > 1 ? 'multiple' : 'single',
+          preparedCategories, // Pass to next test if multiple categories
+          currentCategoryId: nextPrepared.categoryId, // Needed for checkpoint completion on timeout
+          categoryNames: {
+            ...Object.fromEntries(Object.entries(incomingCategoryNames).map(([k,v]) => [String(k), v])),
+            ...Object.fromEntries(preparedCategories.map(pc => [String(pc.categoryId), pc.categoryName]))
+          }
+        }
+      })
     } catch (e) {
       setError(e?.message || 'Failed to start test')
       setStarting(false)
     }
   }
+
+  const overviewKey = `${(categoryIds || []).join('-')}|${(preparedCategories || []).length}`
 
   // Loading state
   if (loading) {
@@ -237,12 +312,42 @@ export const StudentTestOverview = () => {
       </div>
 
       <TestOverviewPanel
+        key={overviewKey}
         sections={sections}
         countdownStart={20}
         onExit={handleExit}
         onStart={handleStart}
         countdownRef={countdownRef}
         checkpoint={checkpoint}
+        pauseCountdown={packageChanged}
+      />
+      {/* Modal: some packages became unavailable (unpublished) but others still available */}
+      <ConfirmDialog
+        isOpen={packageChanged}
+        onClose={() => {
+          // Close dialog and send student back to dashboard
+          setPackageChanged(false)
+          try { sessionStorage.removeItem('test_overview_checkpoint') } catch {}
+          handleExit()
+        }}
+        onConfirm={() => {
+          // Continue with remaining available categories: reload overview with pending checkpoint
+          setPackageChanged(false)
+          if (pendingCheckpoint) {
+            navigate(ROUTES.studentTestOverview, {
+              replace: true,
+              state: pendingCheckpoint,
+            })
+          }
+        }}
+        title="Some test sections are no longer available"
+        message={
+          'One or more sections in this test have been unpublished by your tutor.\n' +
+          'You can continue with the remaining available sections, or return to your dashboard.'
+        }
+        type="warning"
+        confirmText="Continue test"
+        cancelText="Back to dashboard"
       />
       {starting && (
         <div className="fixed inset-0 z-[100] bg-black/10 backdrop-blur-sm flex items-center justify-center">

@@ -1,15 +1,29 @@
 import React from 'react'
 
-const TestCategoryCard = ({ title, questions, minutes, completed = false, _checkpoint = false, className = '' }) => {
-  const qText = completed ? 'Completed' : (typeof questions === 'number' ? `${questions} Questions` : (questions || ''))
-  const mText = completed ? 'Completed' : (typeof minutes === 'number' ? `${minutes} Minutes` : (minutes || ''))
+const TestCategoryCard = ({ title, questions, minutes, completed = false, unavailable = false, _checkpoint = false, className = '' }) => {
+  const isNumber = (v) => typeof v === 'number' && Number.isFinite(v)
+
+  let qText
+  let mText
+
+  if (unavailable) {
+    qText = 'Packet not found'
+    mText = 'Packet not found'
+  } else if (completed) {
+    qText = 'Completed'
+    mText = 'Completed'
+  } else {
+    qText = isNumber(questions) ? `${questions} Questions` : (questions || '')
+    mText = isNumber(minutes) ? `${minutes} Minutes` : (minutes || '')
+  }
 
   return (
     <div
       className={[
         'w-[166px] h-[79px] rounded-xl shadow-[0_4px_4px_#00000040] px-3 py-2',
         'flex flex-col items-center justify-center relative',
-        completed 
+        // Completed and unavailable share the same visual style; only text differs
+        (completed || unavailable)
           ? 'bg-[#a5d6a7] text-gray-700 opacity-80' // darker green and slightly dimmed
           : 'bg-[#f4f9f3] text-gray-700',
         className,

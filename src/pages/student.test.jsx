@@ -173,20 +173,28 @@ export const StudentTestPage = () => {
       return false
     }
     if (res?.status === 404) {
-      // Attempt not found: finalize silently and navigate safely
+      // Attempt not found (likely cleaned up after package draft/unpublish or session loss)
+      // Route through draft modal so user always sees the warning and countdown before leaving.
+      // Do NOT clear TestStorage here so we can still restore meta for Test Overview; cleanup is handled in handleConfirmDraft.
       attemptFinalizedRef.current = true
-      setRedirecting(true)
-      navigate(ROUTES.studentDashboard, { replace: true })
+      stopAllAudio()
+      setLoading(false)
+      draftModal.start()
       return false
     }
     if (res?.status === 403) {
       const reason = String(res?.data?.reason || '').toLowerCase()
       if (reason === 'session_not_found' || reason === 'session_expired' || reason === 'invalid_token') {
+        // Session is no longer valid – treat same as draft/cleanup: show modal and wait for confirmation.
+        // Do NOT clear TestStorage here so we can still restore meta for Test Overview; cleanup is handled in handleConfirmDraft.
         attemptFinalizedRef.current = true
+        stopAllAudio()
+        setLoading(false)
+        draftModal.start()
         return false
       }
     }
-    // Other errors: do not block actions with draft modal
+    // Other errors: do not block actions with draft modal, but also do not navigate automatically
     return true
   }
 
@@ -194,24 +202,79 @@ export const StudentTestPage = () => {
   const handleConfirmDraft = async () => {
     attemptFinalizedRef.current = true
     try { await testApi.cleanupAttempt(attemptId) } catch (_) {}
-    try { TestStorage.clearLocal(attemptId) } catch (_) {}
     sessionStorage.removeItem('last_valid_attemptId')
+    // Reconstruct meta from current state OR stored meta to decide where to go next.
+    let effectiveMode = mode
+    let effectiveCategoryIds = categoryIds || []
+    let effectiveCompleted = completedCategoryIds || []
+    let effectiveRecordId = recordId
+    let effectivePrepared = preparedCategories || []
+    let effectiveCategoryNames = categoryNames || {}
+    let currentCategoryId = location.state?.currentCategoryId || null
 
-    if (mode === 'multiple') {
-      // Redirect to overview using existing meta in memory
+    try {
+      const storedMeta = TestStorage.getLocal(attemptId) || {}
+      if (!effectiveCategoryIds.length && Array.isArray(storedMeta.categoryIds)) {
+        effectiveCategoryIds = storedMeta.categoryIds
+      }
+      if (!effectiveCompleted.length && Array.isArray(storedMeta.completedCategoryIds)) {
+        effectiveCompleted = storedMeta.completedCategoryIds
+      }
+      if (!effectiveRecordId && storedMeta.recordId) {
+        effectiveRecordId = storedMeta.recordId
+      }
+      if (!effectivePrepared.length && Array.isArray(storedMeta.preparedCategories)) {
+        effectivePrepared = storedMeta.preparedCategories
+      }
+      if (!Object.keys(effectiveCategoryNames).length && storedMeta.categoryNames) {
+        effectiveCategoryNames = storedMeta.categoryNames
+      }
+      if (!currentCategoryId) {
+        currentCategoryId = storedMeta.currentCategoryId || null
+      }
+      if (!effectiveMode || effectiveMode === 'single') {
+        const storedMode = storedMeta.mode || (Array.isArray(effectiveCategoryIds) && effectiveCategoryIds.length > 1 ? 'multiple' : 'single')
+        effectiveMode = storedMode
+      }
+    } catch (_) {}
+
+    if (effectiveMode === 'multiple') {
+      // Remove the just-unpublished/current category from prepared list so it becomes unavailable in overview
+      if (currentCategoryId && Array.isArray(effectivePrepared)) {
+        effectivePrepared = effectivePrepared.filter(pc => pc.categoryId !== currentCategoryId)
+      }
+
+      // Persist checkpoint so TestOverview can restore after reload
+      try {
+        const checkpoint = {
+          mode: 'multiple',
+          categoryIds: effectiveCategoryIds,
+          completedCategoryIds: effectiveCompleted,
+          checkpoint: true,
+          recordId: effectiveRecordId,
+          preparedCategories: effectivePrepared,
+          categoryNames: effectiveCategoryNames,
+          packageChanged: true,
+        }
+        sessionStorage.setItem('test_overview_checkpoint', JSON.stringify(checkpoint))
+      } catch (_) {}
+
+      // Redirect to overview using reconstructed meta
       navigate(ROUTES.studentTestOverview, {
         replace: true,
         state: {
           mode: 'multiple',
-          categoryIds,
-          completedCategoryIds,
+          categoryIds: effectiveCategoryIds,
+          completedCategoryIds: effectiveCompleted,
           checkpoint: true,
-          recordId,
-          preparedCategories,
-          categoryNames,
+          recordId: effectiveRecordId,
+          preparedCategories: effectivePrepared,
+          categoryNames: effectiveCategoryNames,
+          packageChanged: true,
         }
       })
     } else {
+      // Single-category flow: go back to dashboard
       navigate(ROUTES.studentDashboard, { replace: true })
     }
   }
@@ -285,6 +348,12 @@ export const StudentTestPage = () => {
   
   // Handle timer expiration - auto submit and navigate
   const handleTimerExpired = async () => {
+    // Before doing auto-submit, ensure the package is still published.
+    // If it has been unpublished/drafted, this will trigger the standard draftModal
+    // flow and we should NOT proceed with auto-submit.
+    const ok = await ensurePublishedOrAbort()
+    if (!ok) return
+
     if (submittingRef.current) return
     submittingRef.current = true
     setSubmitting(true)
@@ -639,51 +708,41 @@ export const StudentTestPage = () => {
           return
         }
         
-        // Handle different error scenarios
-        if (errorData?.reason === 'session_expired') {
-          try { TestStorage.clearLocal(attemptId) } catch (_) {}
-          setRedirecting(true)
-          alert('Your test session has expired. Test was not submitted.')
-          navigate(ROUTES.studentDashboard, { replace: true })
-          return
-        }
-        
-        if (errorData?.reason === 'session_not_found') {
-          setRedirecting(true)
-          navigate(ROUTES.studentDashboard, { replace: true })
-          return
-        }
-        
+        // Handle explicit wrong_attempt: redirect to currently active attempt
         if (errorData?.reason === 'wrong_attempt' && errorData?.activeAttemptId) {
           setRedirecting(true)
           navigate(ROUTES.studentTest.replace(':attemptId', errorData.activeAttemptId), { replace: true })
           return
         }
-        
-        // SECURITY: If test already completed, redirect to dashboard
+
+        // SECURITY: If test already completed, redirect to dashboard (no modal needed)
         if (errorData?.message?.includes('already completed') || errorData?.message?.includes('Cannot access completed')) {
           setRedirecting(true)
           navigate(ROUTES.studentDashboard, { replace: true })
           return
         }
-        
-        // CATCH-ALL: Any 403 error (forbidden) should redirect to dashboard
-        if (errorStatus === 403) {
-          setRedirecting(true)
-          navigate(ROUTES.studentDashboard, { replace: true })
+
+        // For session_expired, session_not_found, generic 403/404: show draft modal first, let its confirm handler manage cleanup + navigation
+        const reason = String(errorData?.reason || '').toLowerCase()
+        const isSessionLost = reason === 'session_expired' || reason === 'session_not_found'
+        const isGenericForbidden = errorStatus === 403
+        const isNotFound = errorStatus === 404
+
+        if (isSessionLost || isGenericForbidden || isNotFound) {
+          // Do NOT clear TestStorage here so we can still restore meta (mode/categoryIds/etc) when coming
+          // from a multiple-category flow; cleanup will be handled centrally in handleConfirmDraft.
+          attemptFinalizedRef.current = true
+          stopAllAudio()
+          setLoading(false)
+          draftModal.start()
           return
         }
-        
-        // CATCH-ALL: Any 404 error (not found) should redirect to dashboard
-        if (errorStatus === 404) {
-          setRedirecting(true)
-          navigate(ROUTES.studentDashboard, { replace: true })
-          return
-        }
-        
-        // If we reach here, something unexpected happened - redirect to dashboard
-        setRedirecting(true)
-        navigate(ROUTES.studentDashboard, { replace: true })
+
+        // Fallback: unexpected error – also route through draft modal for consistent UX
+        attemptFinalizedRef.current = true
+        stopAllAudio()
+        setLoading(false)
+        draftModal.start()
         return
       }
       

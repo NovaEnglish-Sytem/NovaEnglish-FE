@@ -11,6 +11,7 @@ export default function TestOverviewPanel({
   countdownRef,
   checkpoint = false,
   className = '',
+  pauseCountdown = false,
 }) {
   // normalize sections to numbers
   const normalized = useMemo(
@@ -20,13 +21,16 @@ export default function TestOverviewPanel({
         questions: typeof s.questions === 'string' ? parseInt(String(s.questions).replace(/\D+/g, '') || '0', 10) : (s.questions ?? 0),
         minutes: typeof s.minutes === 'string' ? parseInt(String(s.minutes).replace(/\D+/g, '') || '0', 10) : (s.minutes ?? 0),
         completed: s.completed || false,
+        unavailable: s.unavailable || false,
       })),
     [sections]
   )
 
   const total = useMemo(() => {
-    // In checkpoint mode, only count remaining (not completed) categories
-    const relevantSections = checkpoint ? normalized.filter(s => !s.completed) : normalized
+    // In checkpoint mode, only count remaining (not completed and not unavailable) categories
+    const relevantSections = checkpoint
+      ? normalized.filter((s) => !s.completed && !s.unavailable)
+      : normalized.filter((s) => !s.unavailable)
     const tq = relevantSections.reduce((acc, s) => acc + (Number.isFinite(s.questions) ? s.questions : 0), 0)
     const tm = relevantSections.reduce((acc, s) => acc + (Number.isFinite(s.minutes) ? s.minutes : 0), 0)
     return { questions: tq, minutes: tm }
@@ -37,6 +41,7 @@ export default function TestOverviewPanel({
   )
 
   useEffect(() => {
+    if (pauseCountdown) return
     const id = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -55,7 +60,7 @@ export default function TestOverviewPanel({
     }
     
     return () => clearInterval(id)
-  }, [])
+  }, [pauseCountdown])
 
   const isScrollableDesktop = normalized.length > 3
 
@@ -74,6 +79,7 @@ export default function TestOverviewPanel({
               questions={s.questions} 
               minutes={s.minutes}
               completed={s.completed}
+              unavailable={s.unavailable}
               checkpoint={checkpoint}
             />
           ))}
@@ -88,6 +94,7 @@ export default function TestOverviewPanel({
                 questions={s.questions} 
                 minutes={s.minutes}
                 completed={s.completed}
+                unavailable={s.unavailable}
                 checkpoint={checkpoint}
               />
             </div>
