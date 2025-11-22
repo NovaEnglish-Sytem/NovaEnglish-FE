@@ -41,11 +41,19 @@ const QuestionDisplay = React.memo(function QuestionDisplay({
         {(() => {
           const meta = []
           let counter = Number(questionNumberOffset) + 1
+          const htmlToText = (h) => String(h || '').replace(/<[^>]*>/g, '')
           for (const q of questions) {
             const type = String(q.type)
             let blanks = 1
             if (type === 'SHORT_ANSWER') {
-              const tpl = String(q.shortTemplate || '')
+              const tpl = q.shortTemplate
+                || q.shortTemplateHtml
+                || (typeof q.text === 'string' && /\[.*\]/.test(q.text) ? q.text : '')
+                || (typeof q.promptHtml === 'string' && /\[.*\]/.test(htmlToText(q.promptHtml)) ? htmlToText(q.promptHtml) : '')
+              const matches = String(tpl || '').match(/\[[^\]]*\]/g)
+              blanks = Math.max(1, (matches ? matches.length : 0))
+            } else if (type === 'MATCHING_DROPDOWN') {
+              const tpl = String(q.matchingTemplate || '')
               const matches = tpl.match(/\[[^\]]*\]/g)
               blanks = Math.max(1, (matches ? matches.length : 0))
             }

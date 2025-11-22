@@ -516,7 +516,7 @@ export const StudentTestPage = () => {
     return allPages[currentPageIndex] || null
   }, [allPages, currentPageIndex])
 
-  // Build map of expected blank counts per item (SHORT_ANSWER counts blanks in template)
+  // Build map of expected blank counts per item (SHORT_ANSWER & MATCHING_DROPDOWN count blanks in template)
   const expectedBlankCounts = useMemo(() => {
     const map = {}
     try {
@@ -525,6 +525,9 @@ export const StudentTestPage = () => {
           if (!q || !q.id) continue
           if (q.type === 'SHORT_ANSWER') {
             const matches = String(q.shortTemplate || '').match(/\[[^\]]*\]/g) || []
+            map[q.id] = Math.max(1, matches.length)
+          } else if (q.type === 'MATCHING_DROPDOWN') {
+            const matches = String(q.matchingTemplate || '').match(/\[[^\]]*\]/g) || []
             map[q.id] = Math.max(1, matches.length)
           } else {
             map[q.id] = 1
@@ -542,7 +545,7 @@ export const StudentTestPage = () => {
     for (const [itemId, ans] of Object.entries(answers || {})) {
       if (!ans) continue
       
-      if (ans.type === 'SHORT_ANSWER') {
+      if (ans.type === 'SHORT_ANSWER' || ans.type === 'MATCHING_DROPDOWN') {
         // Count filled blanks (non-empty after trim)
         const vals = Array.isArray(ans.value)
           ? ans.value
@@ -562,15 +565,20 @@ export const StudentTestPage = () => {
 
   const isListening = useMemo(() => categoryName.toLowerCase().includes('listen'), [categoryName])
   
-  // Calculate global question number offset from previous pages (per-blank for SHORT_ANSWER)
+  // Calculate global question number offset from previous pages (per-blank for SHORT_ANSWER & MATCHING_DROPDOWN)
   const questionNumberOffset = useMemo(() => {
     if (!allPages || currentPageIndex === 0) return 0
     let offset = 0
     for (let i = 0; i < currentPageIndex; i++) {
       const qs = allPages[i]?.questions || []
       for (const q of qs) {
-        if (String(q.type) === 'SHORT_ANSWER') {
+        const t = String(q.type)
+        if (t === 'SHORT_ANSWER') {
           const tpl = String(q.shortTemplate || '')
+          const matches = tpl.match(/\[[^\]]*\]/g)
+          offset += Math.max(1, (matches ? matches.length : 0))
+        } else if (t === 'MATCHING_DROPDOWN') {
+          const tpl = String(q.matchingTemplate || '')
           const matches = tpl.match(/\[[^\]]*\]/g)
           offset += Math.max(1, (matches ? matches.length : 0))
         } else {
@@ -586,8 +594,10 @@ export const StudentTestPage = () => {
     return currentPageData.questions.every(q => {
       const answer = answers[q.id]
       if (!answer) return false
-      if (q.type === 'SHORT_ANSWER') {
-        const tpl = String(q.shortTemplate || '')
+      if (q.type === 'SHORT_ANSWER' || q.type === 'MATCHING_DROPDOWN') {
+        const tpl = q.type === 'SHORT_ANSWER'
+          ? String(q.shortTemplate || '')
+          : String(q.matchingTemplate || '')
         const blanks = (tpl.match(/\[[^\]]*\]/g) || []).length || 1
         const arr = Array.isArray(answer.value)
           ? answer.value

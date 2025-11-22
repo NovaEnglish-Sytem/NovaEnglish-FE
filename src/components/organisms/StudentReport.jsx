@@ -46,7 +46,9 @@ export const StudentReport = ({
                 startAngle={90}
                 endAngle={-270}
                 stroke="none"
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={800}
+                animationBegin={0}
               >
                 <Cell key="score" fill={GREEN} />
                 <Cell key="remainder" fill={GREY} />

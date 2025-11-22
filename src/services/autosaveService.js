@@ -4,6 +4,7 @@ const typeMap = {
   MCQ: 'MULTIPLE_CHOICE',
   TFNG: 'TRUE_FALSE_NOT_GIVEN',
   SHORT: 'SHORT_ANSWER',
+  MATCHING: 'MATCHING_DROPDOWN',
 }
 
 // Ensure a page has a server ID; creates placeholder if needed

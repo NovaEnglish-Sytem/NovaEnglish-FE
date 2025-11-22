@@ -39,6 +39,9 @@ export const calculateQuestionNumber = (questions, currentIndex, baseIndex = 0) 
     if (prevQuestion.type === 'SHORT') {
       const matches = (prevQuestion.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
       questionNum += matches.length > 0 ? matches.length : 1
+    } else if (prevQuestion.type === 'MATCHING') {
+      const matches = (prevQuestion.matchingTemplate?.match(/\[([^\]]*)\]/g) || [])
+      questionNum += matches.length > 0 ? matches.length : 1
     } else {
       questionNum += 1
     }
@@ -47,8 +50,8 @@ export const calculateQuestionNumber = (questions, currentIndex, baseIndex = 0) 
 }
 
 export const getQuestionNumbers = (question, startNum) => {
-  if (question.type === 'SHORT') {
-    const matches = (question.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
+  if (question.type === 'SHORT' || question.type === 'MATCHING') {
+    const matches = (question.type === 'SHORT' ? question.shortTemplate : question.matchingTemplate)?.match(/\[([^\]]*)\]/g) || []
     if (matches.length > 0) {
       return Array.from({ length: matches.length }, (_, i) => startNum + i)
     }

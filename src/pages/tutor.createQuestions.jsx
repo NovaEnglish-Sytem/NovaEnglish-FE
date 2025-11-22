@@ -313,51 +313,8 @@ export const TutorCreateQuestions = () => {
       }
       const res = await questionsApi.saveDraft(payload)
       setTestPaperId(res?.data?.id || testPaperId)
-      if (res?.ok && res?.data?.draft?.pages) {
-        const incoming = res.data.draft.pages
-        isServerMergingRef.current = true
-        const merged = incoming.map((p, i) => {
-          const prevP = pages?.[i] || {}
-          const mergedQs = (p.questions || []).map((q, j) => {
-            const prevQ = prevP.questions?.[j] || {}
-            const mergedMedia = {
-              imageFile: prevQ.media?.imageFile || null,
-              audioFile: prevQ.media?.audioFile || null,
-              imageUrl: q.media?.imageUrl || prevQ.media?.imageUrl || '',
-              audioUrl: q.media?.audioUrl || prevQ.media?.audioUrl || ''
-            }
-            return {
-              id: q.id || prevQ.id,
-              type: q.type || prevQ.type,
-              text: prevQ.text ?? q.text ?? '',
-              options: Array.isArray(prevQ.options) ? prevQ.options : (q.options || []),
-              correctIndex: (prevQ.correctIndex !== undefined ? prevQ.correctIndex : q.correctIndex ?? null),
-              correctTFNG: (prevQ.correctTFNG !== undefined ? prevQ.correctTFNG : (q.correctTFNG ?? null)),
-              shortTemplate: prevQ.shortTemplate ?? q.shortTemplate ?? '',
-              media: mergedMedia,
-            }
-          })
-          const mergedStoryMedia = {
-            imageFile: prevP.storyMedia?.imageFile || null,
-            audioFile: prevP.storyMedia?.audioFile || null,
-            imageUrl: p.storyMedia?.imageUrl || prevP.storyMedia?.imageUrl || '',
-            audioUrl: p.storyMedia?.audioUrl || prevP.storyMedia?.audioUrl || ''
-          }
-          return {
-            id: p.id || prevP.id,
-            storyMedia: mergedStoryMedia,
-            storyText: prevP.storyText ?? p.storyText ?? '',
-            instructions: prevP.instructions ?? p.instructions ?? '',
-            multiple: prevP.multiple ?? p.multiple ?? true,
-            questions: mergedQs,
-          }
-        })
-        setPages(merged)
-        setTimeout(() => { isServerMergingRef.current = false }, 0)
-        if (Number.isFinite(Number(res.data.draft.quizDuration))) {
-          setQuizDuration(Number(res.data.draft.quizDuration))
-        }
-      }
+      // NOTE: we intentionally do NOT overwrite local pages with res.data.draft.pages here
+      // to avoid clearing fields (e.g., matchingTemplate) due to server normalization.
       setHasUnsavedChanges(false)
       setSaveStatus('saved')
       setLastSavedAt(new Date())
@@ -394,6 +351,7 @@ export const TutorCreateQuestions = () => {
         correctIndex: q.correctIndex,
         correctTFNG: q.correctTFNG,
         shortTemplate: q.shortTemplate,
+        matchingTemplate: q.matchingTemplate,
         mediaUrls: {
           imageUrl: q.media?.imageUrl || '',
           audioUrl: q.media?.audioUrl || '',
@@ -413,6 +371,7 @@ export const TutorCreateQuestions = () => {
         correctIndex: q.correctIndex,
         correctTFNG: q.correctTFNG,
         shortTemplate: q.shortTemplate,
+        matchingTemplate: q.matchingTemplate,
       }))
     }))
   }
@@ -571,59 +530,8 @@ export const TutorCreateQuestions = () => {
       }
       const res = await questionsApi.saveDraft(payload)
       setTestPaperId(res?.data?.id || testPaperId)
-      if (res?.ok && res?.data?.draft?.pages) {
-        const incoming = res.data.draft.pages
-        // Flag: this is server merge, not user edit
-        isServerMergingRef.current = true
-        // Use functional update to avoid overwriting user-typed text; keep local content, take server IDs/media
-        setPages((prevPages) => {
-          const merged = (incoming || []).map((p, i) => {
-            const prevP = prevPages?.[i] || {}
-            const mergedQs = (p.questions || []).map((q, j) => {
-              const prevQ = prevP.questions?.[j] || {}
-              const mergedMedia = {
-                imageFile: prevQ.media?.imageFile || null,
-                audioFile: prevQ.media?.audioFile || null,
-                imageUrl: q.media?.imageUrl || prevQ.media?.imageUrl || '',
-                audioUrl: q.media?.audioUrl || prevQ.media?.audioUrl || ''
-              }
-              // Preserve local content fields; take server id/type if present
-              return {
-                id: q.id || prevQ.id,
-                type: q.type || prevQ.type,
-                text: prevQ.text ?? q.text ?? '',
-                options: Array.isArray(prevQ.options) ? prevQ.options : (q.options || []),
-                correctIndex: (prevQ.correctIndex !== undefined ? prevQ.correctIndex : q.correctIndex ?? null),
-                correctTFNG: (prevQ.correctTFNG !== undefined ? prevQ.correctTFNG : (q.correctTFNG ?? null)),
-                shortTemplate: prevQ.shortTemplate ?? q.shortTemplate ?? '',
-                media: mergedMedia,
-              }
-            })
-            const mergedStoryMedia = {
-              imageFile: prevP.storyMedia?.imageFile || null,
-              audioFile: prevP.storyMedia?.audioFile || null,
-              imageUrl: p.storyMedia?.imageUrl || prevP.storyMedia?.imageUrl || '',
-              audioUrl: p.storyMedia?.audioUrl || prevP.storyMedia?.audioUrl || ''
-            }
-            return {
-              // take server ID/order
-              id: p.id || prevP.id,
-              storyMedia: mergedStoryMedia,
-              // preserve local content
-              storyText: prevP.storyText ?? p.storyText ?? '',
-              instructions: prevP.instructions ?? p.instructions ?? '',
-              multiple: prevP.multiple ?? p.multiple ?? true,
-              questions: mergedQs,
-            }
-          })
-          return merged
-        })
-        // Clear flag after state update (use microtask to ensure effect has run)
-        setTimeout(() => { isServerMergingRef.current = false }, 0)
-        if (Number.isFinite(Number(res.data.draft.quizDuration))) {
-          setQuizDuration(Number(res.data.draft.quizDuration))
-        }
-      }
+      // NOTE: intentionally not merging res.data.draft.pages back into local state here
+      // to avoid overwriting in-progress edits (especially matchingTemplate).
       setHasUnsavedChanges(false)
       setSaveStatus('saved')
       setLastSavedAt(new Date())

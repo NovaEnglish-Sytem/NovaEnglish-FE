@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import AudioPlayerMinimal from '../molecules/AudioPlayerMinimal.jsx'
 import PageMedia from '../molecules/PageMedia.jsx'
 import PropTypes from 'prop-types'
-import { calculateQuestionNumber, parseInlineTemplate } from '../../utils/questionHelpers.js'
+import { calculateQuestionNumber, getQuestionNumbers, parseInlineTemplate } from '../../utils/questionHelpers.js'
 import ImageModal from '../molecules/ImageModal.jsx'
+import MatchingDropdownInline from '../molecules/MatchingDropdownInline.jsx'
 
 const PreviewBlock = ({ data, baseIndex = 0, currentPageIndex = 0, previewAnswers, _setPreviewAnswers }) => {
   const [imageModal, setImageModal] = useState({ isOpen: false, src: '', alt: '' })
@@ -58,11 +59,19 @@ const PreviewBlock = ({ data, baseIndex = 0, currentPageIndex = 0, previewAnswer
           const questionNum = calculateQuestionNumber(data.questions, idx, baseIndex)
           const questionKey = `page-${currentPageIndex}-q-${idx}`
 
+          let questionLabel = String(questionNum)
+          if (q.type === 'SHORT' || q.type === 'MATCHING') {
+            const nums = getQuestionNumbers(q, questionNum)
+            if (nums.length > 1) {
+              questionLabel = `${nums[0]}-${nums[nums.length - 1]}`
+            } else {
+              questionLabel = String(nums[0])
+            }
+          }
+
           return (
             <div key={q.id || idx} className="rounded-md border border-gray-200 p-3 sm:p-4 bg-white">
-              {(q.type === 'MCQ' || q.type === 'TFNG') && (
-                <div className="text-sm sm:text-base font-semibold text-gray-700 mb-3">Question {questionNum}</div>
-              )}
+              <div className="text-sm sm:text-base font-semibold text-gray-700 mb-3">Question {questionLabel}</div>
 
               {q.type === 'MCQ' && (
                 <div className="space-y-3">
@@ -167,16 +176,36 @@ const PreviewBlock = ({ data, baseIndex = 0, currentPageIndex = 0, previewAnswer
                 return (
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-1 text-sm sm:text-base text-gray-700 leading-relaxed">
-                      {parts.map((part, i2) => (
-                        part.type === 'text' ? (
-                          <span key={i2} className="whitespace-pre-wrap">{part.content}</span>
-                        ) : (
+                      {parts.map((part, i2) => {
+                        if (part.type === 'text') {
+                          const raw = String(part.content || '')
+                          const lines = raw.split(/\n/)
+                          const nodes = []
+                          lines.forEach((ln, li) => {
+                            if (li > 0) {
+                              nodes.push(<div key={`br-${i2}-${li}`} className="basis-full h-0" />)
+                            }
+                            if (ln) {
+                              nodes.push(
+                                <span key={`t-${i2}-${li}`} className="whitespace-pre-wrap">{ln}</span>
+                              )
+                            }
+                          })
+                          return nodes
+                        }
+                        return (
                           <span key={i2} className="inline-flex items-center gap-1">
                             <span className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-50 border border-green-300 text-xs font-medium text-green-700">{part.number}</span>
-                            <input type="text" value={part.answer || ''} readOnly className="inline-block w-24 sm:w-32 h-7 sm:h-8 px-2 rounded border-2 border-green-300 bg-green-50 text-sm sm:text-base font-medium text-gray-800" title={`Correct answer: ${part.answer}`} />
+                            <input
+                              type="text"
+                              value={String(part.answer || '').toLowerCase()}
+                              readOnly
+                              className="inline-block w-24 sm:w-32 h-7 sm:h-8 px-2 rounded border-2 border-green-300 bg-green-50 text-sm sm:text-base font-medium text-gray-800"
+                              title={`Correct answer: ${String(part.answer || '').toLowerCase()}`}
+                            />
                           </span>
                         )
-                      ))}
+                      })}
                     </div>
                     {(q.media?.imageFile || q.media?.imageUrl || q.media?.audioFile || q.media?.audioUrl) && (
                       <div className="flex flex-col gap-3 mt-3">
@@ -193,6 +222,64 @@ const PreviewBlock = ({ data, baseIndex = 0, currentPageIndex = 0, previewAnswer
                                 src={q.media.imageFile ? URL.createObjectURL(q.media.imageFile) : q.media.imageUrl} 
                                 alt={`Question ${baseIndex + idx + 1}`} 
                                 className="h-40 sm:h-48 w-auto object-contain rounded border border-gray-200" 
+                              />
+                            </button>
+                          </div>
+                        )}
+                        {(q.media?.audioFile || q.media?.audioUrl) && (
+                          <div className="w-full max-w-sm mx-auto">
+                            <AudioPlayerMinimal
+                              src={q.media.audioFile ? URL.createObjectURL(q.media.audioFile) : q.media.audioUrl}
+                              maxPlays={null}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
+              {q.type === 'MATCHING' && (() => {
+                const tpl = String(q.matchingTemplate || '')
+                const regex = /\[([^\]]+)\]/g
+                const answers = []
+                const optionSet = new Set()
+                let m
+                while ((m = regex.exec(tpl)) !== null) {
+                  const ans = String(m[1] || '').trim()
+                  answers.push(ans)
+                  if (ans) optionSet.add(ans)
+                }
+                const options = Array.from(optionSet)
+
+                return (
+                  <div className="space-y-3">
+                    <div className="overflow-x-auto">
+                      <MatchingDropdownInline
+                        template={tpl}
+                        options={options}
+                        values={answers}
+                        onChange={() => {}}
+                        numberStart={questionNum}
+                        disabled
+                      />
+                    </div>
+                    {(q.media?.imageFile || q.media?.imageUrl || q.media?.audioFile || q.media?.audioUrl) && (
+                      <div className="flex flex-col gap-3 mt-3">
+                        {(q.media?.imageFile || q.media?.imageUrl) && (
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleImageClick(
+                                q.media.imageFile ? URL.createObjectURL(q.media.imageFile) : q.media.imageUrl,
+                                `Question ${baseIndex + idx + 1}`
+                              )}
+                              className="cursor-pointer hover:opacity-80 transition-opacity"
+                            >
+                              <img
+                                src={q.media.imageFile ? URL.createObjectURL(q.media.imageFile) : q.media.imageUrl}
+                                alt={`Question ${baseIndex + idx + 1}`}
+                                className="h-40 sm:h-48 w-auto object-contain rounded border border-gray-200"
                               />
                             </button>
                           </div>

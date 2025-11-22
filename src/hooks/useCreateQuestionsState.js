@@ -44,6 +44,9 @@ export default function useCreateQuestionsState(initialPages = [defaultInitialPa
         if (q.type === 'SHORT') {
           const matches = (q.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
           count += matches.length > 0 ? matches.length : 1
+        } else if (q.type === 'MATCHING') {
+          const matches = (q.matchingTemplate?.match(/\[([^\]]*)\]/g) || [])
+          count += matches.length > 0 ? matches.length : 1
         } else {
           count += 1
         }
@@ -58,6 +61,9 @@ export default function useCreateQuestionsState(initialPages = [defaultInitialPa
       for (const q of page.questions || []) {
         if (q.type === 'SHORT') {
           const matches = (q.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
+          count += matches.length > 0 ? matches.length : 1
+        } else if (q.type === 'MATCHING') {
+          const matches = (q.matchingTemplate?.match(/\[([^\]]*)\]/g) || [])
           count += matches.length > 0 ? matches.length : 1
         } else {
           count += 1

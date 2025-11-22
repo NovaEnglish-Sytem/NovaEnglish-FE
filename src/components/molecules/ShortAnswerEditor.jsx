@@ -76,24 +76,38 @@ export default function ShortAnswerEditor({
             <div className="text-sm font-medium text-gray-700 mb-2">Preview:</div>
             <div className="rounded-[5px] border border-gray-200 bg-gray-50 p-3">
               <div className="flex flex-wrap items-center gap-1 text-sm text-gray-700 leading-relaxed">
-                {parseInlineTemplate(v.shortTemplate, questionNumber).map((part, idx) => (
-                  part.type === 'text' ? (
-                    <span key={idx} className="whitespace-pre-wrap">{part.content}</span>
-                  ) : (
+                {parseInlineTemplate(v.shortTemplate, questionNumber).map((part, idx) => {
+                  if (part.type === 'text') {
+                    const raw = String(part.content || '')
+                    const lines = raw.split(/\n/)
+                    const nodes = []
+                    lines.forEach((ln, li) => {
+                      if (li > 0) {
+                        nodes.push(<div key={`br-${idx}-${li}`} className="basis-full h-0" />)
+                      }
+                      if (ln) {
+                        nodes.push(
+                          <span key={`t-${idx}-${li}`} className="whitespace-pre-wrap">{ln}</span>
+                        )
+                      }
+                    })
+                    return nodes
+                  }
+                  return (
                     <span key={idx} className="inline-flex items-center gap-1">
                       <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 text-xs font-medium text-gray-600">
                         {part.number}
                       </span>
                       <input
                         type="text"
-                        value={part.answer}
+                        value={String(part.answer || '').toLowerCase()}
                         readOnly
                         className="inline-block w-32 h-7 px-2 rounded border border-gray-300 bg-white text-sm"
                         placeholder={`Answer ${part.number}`}
                       />
                     </span>
                   )
-                ))}
+                })}
               </div>
             </div>
           </div>

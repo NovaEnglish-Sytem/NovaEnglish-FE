@@ -20,6 +20,7 @@ export default function QuestionCard({
     MCQ: 'Multiple Choice',
     TFNG: 'True / False / Not Given',
     SHORT: 'Short Answer',
+    MATCHING: 'Matching Dropdown',
   }[type] || type
 
   return (
@@ -90,7 +91,7 @@ export default function QuestionCard({
 
 QuestionCard.propTypes = {
   number: PropTypes.number.isRequired,
-  type: PropTypes.oneOf(['MCQ','TFNG','SHORT']).isRequired,
+  type: PropTypes.oneOf(['MCQ','TFNG','SHORT','MATCHING']).isRequired,
   onMoveUp: PropTypes.func,
   onMoveDown: PropTypes.func,
   onDelete: PropTypes.func,

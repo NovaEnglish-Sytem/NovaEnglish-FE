@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import ShortAnswerInline from './ShortAnswerInline.jsx'
+import MatchingDropdownInline from './MatchingDropdownInline.jsx'
 import { classes } from '../../config/theme/tokens.js'
 
 const AudioPlayerMinimal = React.lazy(() => import('./AudioPlayerMinimal.jsx'))
@@ -82,11 +83,9 @@ const StudentQuestionCard = React.memo(function StudentQuestionCard({
 
   return (
     <div className="rounded-md border border-gray-200 p-3 sm:p-4 bg-white">
-      {normType !== 'SHORT_ANSWER' && (
-        <div className="text-sm sm:text-base font-semibold text-gray-700 mb-3">Question {questionLabel}</div>
-      )}
+      <div className="text-sm sm:text-base font-semibold text-gray-700 mb-3">Question {questionLabel}</div>
 
-      {normType !== 'SHORT_ANSWER' && (
+      {normType !== 'SHORT_ANSWER' && normType !== 'MATCHING_DROPDOWN' && (
         q.promptHtml ? (
           <div className="text-sm sm:text-base text-gray-700 mb-3 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: q.promptHtml }} />
         ) : (q.text ? (
@@ -193,6 +192,35 @@ const StudentQuestionCard = React.memo(function StudentQuestionCard({
               template={tpl}
               values={saVals}
               onChange={handleSAChange}
+              numberStart={blankNumberStart}
+            />
+          </div>
+        )
+      })()}
+
+      {normType === 'MATCHING_DROPDOWN' && (() => {
+        const mdVals = Array.isArray(value) ? value : (value == null ? [] : [String(value)])
+        const handleChange = (idx, v) => {
+          const next = [...mdVals]
+          next[idx] = v
+          onChange?.(next)
+        }
+        const htmlToText = (h) => String(h || '').replace(/<[^>]*>/g, '')
+        const tpl = q.matchingTemplate
+          || q.text
+          || (typeof q.promptHtml === 'string' ? htmlToText(q.promptHtml) : '')
+        // Options are expected from API as choices array or options array
+        const rawOptions = Array.isArray(q.choices) && q.choices.length > 0
+          ? q.choices.map(c => c.label ?? c.text ?? c.value ?? c.key ?? '')
+          : (Array.isArray(q.options) ? q.options : [])
+
+        return (
+          <div className="overflow-x-auto">
+            <MatchingDropdownInline
+              template={tpl}
+              options={rawOptions}
+              values={mdVals}
+              onChange={handleChange}
               numberStart={blankNumberStart}
             />
           </div>

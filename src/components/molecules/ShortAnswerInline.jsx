@@ -38,18 +38,27 @@ export default function ShortAnswerInline({ template, values = [], onChange, num
   let blankCounter = 0
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-1">
       {parts.map((seg, i) => {
         if (seg.type === 'text') {
-          return (
-            <span key={`t-${i}`} className="whitespace-pre-wrap text-sm sm:text-base text-gray-700">
-              {seg.content}
-            </span>
-          )
+          const raw = String(seg.content || '')
+          const lines = raw.split(/\n/)
+          const nodes = []
+          lines.forEach((ln, li) => {
+            if (li > 0) {
+              nodes.push(<div key={`br-${i}-${li}`} className="basis-full h-0" />)
+            }
+            if (ln) {
+              nodes.push(
+                <span key={`t-${i}-${li}`} className="whitespace-pre-wrap text-sm sm:text-base text-gray-700">{ln}</span>
+              )
+            }
+          })
+          return nodes
         }
         // blank
         const bIndex = seg.index
-        const label = numberStart + blankCounter + 1
+        const label = numberStart + blankCounter
         const val = String(values[bIndex] || '')
         const isActive = focusedIndex === bIndex || (val && val.trim().length > 0)
         const inputClasses = [

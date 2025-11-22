@@ -5,6 +5,7 @@ import QuestionCard from '../molecules/QuestionCard.jsx'
 import MultipleChoiceEditor from '../molecules/MultipleChoiceEditor.jsx'
 import TFNGEditor from '../molecules/TFNGEditor.jsx'
 import ShortAnswerEditor from '../molecules/ShortAnswerEditor.jsx'
+import MatchingDropdownEditor from '../molecules/MatchingDropdownEditor.jsx'
 import { Checkbox } from '../atoms/Checkbox.jsx'
 import { ConfirmDialog } from '../molecules/ConfirmDialog.jsx'
 import { parseShortAnswers, generateUniqueId, calculateQuestionNumber, getQuestionNumbers } from '../../utils/questionHelpers.js'
@@ -35,6 +36,18 @@ export const validateQuestion = (q) => {
       errs.shortTemplate = 'Empty brackets [] detected. Please add answers inside the brackets, e.g., [answer]'
     } else if (answers.length === 0) {
       errs.shortTemplate = 'Please include at least one [answer] using square brackets'
+    }
+  } else if (q.type === 'MATCHING') {
+    const tpl = q.matchingTemplate || ''
+    const hasEmptyBrackets = /\[\s*\]/.test(tpl)
+    const hasAnyBracket = /\[[^\]]+\]/.test(tpl)
+
+    if (!tpl.trim()) {
+      errs.matchingTemplate = 'Please enter the text with [answers]'
+    } else if (hasEmptyBrackets) {
+      errs.matchingTemplate = 'Empty brackets [] detected. Please add answers inside the brackets, e.g., [answer]'
+    } else if (!hasAnyBracket) {
+      errs.matchingTemplate = 'Please include at least one [answer] using square brackets'
     }
   }
   return errs
@@ -195,6 +208,7 @@ export default function QuestionBuilder({
             <option value="MCQ">Multiple Choice</option>
             <option value="TFNG">True / False / Not Given</option>
             <option value="SHORT">Short Answer</option>
+            <option value="MATCHING">Matching Dropdown</option>
           </select>
           <button
             type="button"
@@ -260,6 +274,16 @@ export default function QuestionBuilder({
                 />
               </div>
             )}
+            {q.type === 'MATCHING' && (
+              <div onBlur={() => runValidation(i)}>
+                <MatchingDropdownEditor
+                  value={q}
+                  onChange={(vv) => setQuestion(i, vv)}
+                  errors={localErrors[i] || {}}
+                  questionNumber={currentNum}
+                />
+              </div>
+            )}
             {q.type === 'TFNG' && (
               <div onBlur={() => runValidation(i)}>
                 <TFNGEditor
@@ -302,7 +326,7 @@ QuestionBuilder.propTypes = {
     multiple: PropTypes.bool,
     questions: PropTypes.arrayOf(PropTypes.shape({
       id: PropTypes.string,
-      type: PropTypes.oneOf(['MCQ','TFNG','SHORT']).isRequired,
+      type: PropTypes.oneOf(['MCQ','TFNG','SHORT','MATCHING']).isRequired,
     }))
   }).isRequired,
   onChange: PropTypes.func.isRequired,
