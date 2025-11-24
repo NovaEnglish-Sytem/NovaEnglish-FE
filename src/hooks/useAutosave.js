@@ -24,7 +24,9 @@ export function useAutosave({ attemptId, answers, audioCounts, currentPageIndex,
   // Debounced localStorage save
   useEffect(() => {
     if (!attemptId) return
-    if (!answers || Object.keys(answers).length === 0) return
+    const hasAnswers = answers && Object.keys(answers).length > 0
+    const hasAudio = audioCounts && Object.keys(audioCounts).length > 0
+    if (!hasAnswers && !hasAudio) return
 
     dirtyRef.current = true
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
@@ -46,7 +48,9 @@ export function useAutosave({ attemptId, answers, audioCounts, currentPageIndex,
     if (!attemptId || !sessionToken) return
 
     const syncToDatabase = async () => {
-      if (!dirtyRef.current || !answers || Object.keys(answers).length === 0) return
+      const hasAnswers = answers && Object.keys(answers).length > 0
+      const hasAudio = audioCounts && Object.keys(audioCounts).length > 0
+      if (!dirtyRef.current || (!hasAnswers && !hasAudio)) return
       const currentHash = JSON.stringify({ answers, audioCounts, currentPageIndex })
       if (currentHash === lastAnswersHashRef.current) return
 

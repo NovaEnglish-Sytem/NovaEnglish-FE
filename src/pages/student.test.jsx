@@ -285,18 +285,36 @@ export const StudentTestPage = () => {
     const nav = location.state || {}
     const stored = TestStorage.getLocal(attemptId) || {}
     
-    // Build payload with fallback chain
+    // Normalize arrays/objects with length checks to avoid overwriting stored meta with empty values
+    const navCategoryIds = Array.isArray(nav.categoryIds) && nav.categoryIds.length > 0 ? nav.categoryIds : null
+    const stateCategoryIds = Array.isArray(categoryIds) && categoryIds.length > 0 ? categoryIds : null
+    const storedCategoryIds = Array.isArray(stored.categoryIds) ? stored.categoryIds : []
+
+    const navCompleted = Array.isArray(nav.completedCategoryIds) ? nav.completedCategoryIds : null
+    const stateCompleted = Array.isArray(completedCategoryIds) ? completedCategoryIds : null
+    const storedCompleted = Array.isArray(stored.completedCategoryIds) ? stored.completedCategoryIds : []
+
+    const navPrepared = Array.isArray(nav.preparedCategories) && nav.preparedCategories.length > 0 ? nav.preparedCategories : null
+    const statePrepared = Array.isArray(preparedCategories) && preparedCategories.length > 0 ? preparedCategories : null
+    const storedPrepared = Array.isArray(stored.preparedCategories) ? stored.preparedCategories : []
+
+    const navNames = nav.categoryNames && Object.keys(nav.categoryNames).length > 0 ? nav.categoryNames : null
+    const stateNames = categoryNames && Object.keys(categoryNames).length > 0 ? categoryNames : null
+    const storedNames = stored.categoryNames || {}
+
+    // Build payload with robust fallback chain
     const payload = {
-      categoryIds: nav.categoryIds || categoryIds || stored.categoryIds || [],
-      completedCategoryIds: nav.completedCategoryIds || completedCategoryIds || stored.completedCategoryIds || [],
+      categoryIds: navCategoryIds || stateCategoryIds || storedCategoryIds,
+      completedCategoryIds: navCompleted || stateCompleted || storedCompleted,
       recordId: nav.recordId || recordId || stored.recordId || null,
-      preparedCategories: nav.preparedCategories || preparedCategories || stored.preparedCategories || [],
-      categoryNames: nav.categoryNames || categoryNames || stored.categoryNames || {},
+      preparedCategories: navPrepared || statePrepared || storedPrepared,
+      categoryNames: navNames || stateNames || storedNames,
       currentCategoryId: nav.currentCategoryId || stored.currentCategoryId || null
     }
     
     // Determine mode
-    if (nav.mode || mode === 'multiple' || payload.categoryIds.length > 1) {
+    const navMode = typeof nav.mode === 'string' ? nav.mode.toLowerCase() : null
+    if (navMode === 'multiple' || mode === 'multiple' || payload.categoryIds.length > 1) {
       payload.mode = 'multiple'
     } else {
       payload.mode = 'single'
@@ -488,7 +506,7 @@ export const StudentTestPage = () => {
   // HYBRID AUTO-SAVE: Beacon save on page unload + passive recovery on visibility
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (Object.keys(answers).length === 0) return
+      if (Object.keys(answers).length === 0 && Object.keys(audioCounts).length === 0) return
       
       // Flush debounced save immediately
       if (saveTimeoutRef.current) {
@@ -508,7 +526,7 @@ export const StudentTestPage = () => {
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'hidden') {
         // User leaving tab - beacon save
-        if (Object.keys(answers).length > 0) {
+        if (Object.keys(answers).length > 0 || Object.keys(audioCounts).length > 0) {
           const answersArray = Object.entries(answers).map(([itemId, answerData]) => ({
             itemId,
             type: answerData.type,
