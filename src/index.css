@@ -1,11 +1,17 @@
 @import "tailwindcss";
 
-
-/* Utility: opt-in scrollbar gutter to avoid layout shift on selected layouts only */
-.scrollbar-stable {
-  scrollbar-gutter: stable;
+@layer base {
+  html,
+  :host {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
 }
 
+html, body {
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
 
 /* ================= Custom scrollbar for Image Modal ================= */
 .image-modal-scroll::-webkit-scrollbar {

@@ -4,6 +4,7 @@ import { Header } from '../components/organisms/Header.jsx'
 import { Button } from '../components/atoms/Button.jsx'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import ShieldSvg from '../assets/Shield.svg'
 import { classes } from '../config/theme/tokens.js'
 import { studentApi } from '../lib/api.js'
@@ -16,6 +17,8 @@ export const ResultPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [data, setData] = useState({ attempt: null, categories: [], level: null, avgScore: 0, feedback: null, levels: [], recordInfo: null })
+  
+  const showInitialLoading = useDelayedSpinner(loading, 700)
   
   // SECURITY: Validate attemptId format
   useRouteGuard({
@@ -108,7 +111,10 @@ export const ResultPage = () => {
     return (
       <div className="bg-neutral-100 min-h-screen">
         <Header logoTo={ROUTES.studentDashboard} />
-        <LoadingState message="Loading result..." fullPage />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading result...'}
+          fullPage
+        />
       </div>
     )
   }

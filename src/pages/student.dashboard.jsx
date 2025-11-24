@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 import { studentApi, testApi } from '../lib/api.js'
 import { classes } from '../config/theme/tokens.js'
 import { useActiveTestSession } from '../hooks/useActiveTestSession.js'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 export const StudentDashboard = () => {
   const navigate = useNavigate()
@@ -24,6 +25,8 @@ export const StudentDashboard = () => {
   const [error, setError] = useState(null)
   const [redirecting, setRedirecting] = useState(false)
   const [summary, setSummary] = useState({ greeting: { name: '' }, student: { level: null }, recent: [], categories: [], activeRecord: null })
+  
+  const showInitialLoading = useDelayedSpinner(loading && !redirecting, 700)
   
   // Check for active test session and auto-submit expired sessions
   useActiveTestSession({ autoRedirect: true, checkOnMount: true })
@@ -254,7 +257,9 @@ export const StudentDashboard = () => {
         }
         centerHeaderSlot={<TopNav items={navigationItems} className="hidden lg:flex" />}
       >
-        <LoadingState message={navigatingToOverview ? 'Loading test overview...' : 'Loading dashboard...'} />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : (navigatingToOverview ? 'Loading test overview...' : 'Loading dashboard...')}
+        />
       </AppLayout>
     )
   }

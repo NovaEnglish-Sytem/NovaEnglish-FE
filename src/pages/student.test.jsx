@@ -1229,6 +1229,11 @@ export const StudentTestPage = () => {
         </footer>
       </div>
 
+      {submitting && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-sm">
+          <LoadingState message="Please wait..." fullPage={false} minHeight="min-h-[0]" />
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={expiredModal.isOpen}

@@ -11,6 +11,7 @@ import { api } from '../lib/api.js'
 import ConfirmDialog from '../components/molecules/ConfirmDialog.jsx'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import { FiPlus, FiTrash2 } from 'react-icons/fi'
 
 export const ManageFeedback = () => {
@@ -45,6 +46,8 @@ export const ManageFeedback = () => {
     indexToDelete: null,
     templateToDelete: null
   })
+
+  const showInitialLoading = useDelayedSpinner(loading, 700)
 
   const handleLogout = async () => {
     try {

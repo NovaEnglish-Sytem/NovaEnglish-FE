@@ -17,6 +17,7 @@ import UserFormModal from '../components/molecules/UserFormModal.jsx'
 import { TbArrowsSort, TbArrowUp, TbArrowDown } from 'react-icons/tb'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 const ManageUsers = () => {
   const navigate = useNavigate()
@@ -79,6 +80,8 @@ const ManageUsers = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteUserId, setDeleteUserId] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const showInitialLoading = useDelayedSpinner(isLoading, 700)
 
   // Sorting state (matching Student Progress pattern)
   const [sortField, setSortField] = useState('fullName') // Default sort by fullName
@@ -488,7 +491,7 @@ const ManageUsers = () => {
     </div>
   )
 
-  const Row = ({ u, adminSection: _adminSection = false }) => (
+  const Row = ({ u, adminSection = false }) => (
     <div
       className={[
         'rounded-[12px] shadow-[0_4px_4px_#0000001a] px-6 py-6 mb-6',
@@ -531,29 +534,36 @@ const ManageUsers = () => {
           })()}
         </div>
         <div className="flex items-center justify-end pr-3">
-          {u.id === currentUser?.id ? (
-            <span className="text-gray-500 text-sm">(You)</span>
+          {adminSection ? (
+            // In Admin section, do not allow editing/deleting any admin via UI
+            u.id === currentUser?.id ? (
+              <span className="text-gray-500 text-sm">(You)</span>
+            ) : null
           ) : (
-            <div className="flex items-center gap-6">
-              <button
-                className="text-blue-600 font-medium hover:underline text-center cursor-pointer whitespace-nowrap"
-                type="button"
-                onClick={() => openEdit(u)}
-                disabled={isUpdating}
-                aria-label="Edit user"
-              >
-                Edit
-              </button>
-              <button
-                className="text-red-600 font-medium hover:underline text-center cursor-pointer whitespace-nowrap"
-                type="button"
-                onClick={() => requestDelete(u.id)}
-                disabled={isUpdating || isDeleting}
-                aria-label="Delete user"
-              >
-                Delete
-              </button>
-            </div>
+            u.id === currentUser?.id ? (
+              <span className="text-gray-500 text-sm">(You)</span>
+            ) : (
+              <div className="flex items-center gap-6">
+                <button
+                  className="text-blue-600 font-medium hover:underline text-center cursor-pointer whitespace-nowrap"
+                  type="button"
+                  onClick={() => openEdit(u)}
+                  disabled={isUpdating}
+                  aria-label="Edit user"
+                >
+                  Edit
+                </button>
+                <button
+                  className="text-red-600 font-medium hover:underline text-center cursor-pointer whitespace-nowrap"
+                  type="button"
+                  onClick={() => requestDelete(u.id)}
+                  disabled={isUpdating || isDeleting}
+                  aria-label="Delete user"
+                >
+                  Delete
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>
@@ -568,7 +578,10 @@ const ManageUsers = () => {
         sidebarItems={navigationItems}
         onLogout={handleLogout}
       >
-        <LoadingState message="Loading users..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading users...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </DashboardLayout>
     )
   }

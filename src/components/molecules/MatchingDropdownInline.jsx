@@ -32,7 +32,7 @@ export default function MatchingDropdownInline({ template, options = [], values 
 
   const normalizedOptions = useMemo(() => {
     if (!Array.isArray(options)) return []
-    return options.map((opt, idx) => {
+    const mapped = options.map((opt, idx) => {
       if (typeof opt === 'string') {
         const raw = String(opt || '').trim()
         const label = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : ''
@@ -42,6 +42,12 @@ export default function MatchingDropdownInline({ template, options = [], values 
       const baseLabel = String(opt.label ?? opt.text ?? opt.value ?? raw)
       const label = baseLabel ? baseLabel.charAt(0).toUpperCase() + baseLabel.slice(1) : ''
       return { key: raw, label, id: idx }
+    })
+
+    return mapped.sort((a, b) => {
+      const la = a.label || ''
+      const lb = b.label || ''
+      return la.localeCompare(lb, undefined, { sensitivity: 'base' })
     })
   }, [options])
 

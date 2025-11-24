@@ -7,6 +7,7 @@ import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import { useActiveTestSession } from '../hooks/useActiveTestSession.js'
 import ConfirmDialog from '../components/molecules/ConfirmDialog.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 
 export const StudentTestOverview = () => {
@@ -19,6 +20,8 @@ export const StudentTestOverview = () => {
   const [packageChanged, setPackageChanged] = useState(false)
   const [pendingCheckpoint, setPendingCheckpoint] = useState(null)
   const countdownRef = useRef(null)
+  
+  const showInitialLoading = useDelayedSpinner(loading, 700)
   
   // Check for active test session and auto-submit expired sessions
   useActiveTestSession({ autoRedirect: true, checkOnMount: true })
@@ -280,7 +283,10 @@ export const StudentTestOverview = () => {
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-[#003900] flex items-center justify-center p-4">
-        <LoadingState message="Loading test overview..." className="text-white" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading test overview...'}
+          className="text-white"
+        />
       </div>
     )
   }

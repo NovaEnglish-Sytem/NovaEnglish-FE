@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 import { api } from '../lib/api.js'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import { Spinner } from '../components/atoms/Spinner.jsx'
 
 export const TutorStudentProgressDetails = () => {
@@ -36,6 +37,8 @@ export const TutorStudentProgressDetails = () => {
   const [pageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+
+  const showInitialLoading = useDelayedSpinner(!error && !hydrated, 700)
 
   const handleLogout = async () => {
     try { await logout() } catch (_) {}
@@ -178,7 +181,10 @@ export const TutorStudentProgressDetails = () => {
         sidebarItems={navigationItems}
         onLogout={handleLogout}
       >
-        <LoadingState message="Loading student details..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading student details...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </DashboardLayout>
     )
   }

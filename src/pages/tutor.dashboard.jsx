@@ -13,6 +13,7 @@ import { ROUTES } from '../config/routes.js'
 import TutorHeaderRight from '../components/organisms/TutorHeaderRight.jsx'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { api } from '../lib/api.js'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 export const TutorDashboard = () => {
   const navigate = useNavigate()
@@ -21,6 +22,8 @@ export const TutorDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null)
   const [studentsPreview, setStudentsPreview] = useState([])
   const [error, setError] = useState(null)
+
+  const showInitialLoading = useDelayedSpinner(loading, 700)
 
   // Build navigation based on user role
   const navigationHandlers = {
@@ -84,7 +87,10 @@ export const TutorDashboard = () => {
         showFooter={true}
         onLogout={handleLogout}
       >
-        <LoadingState message="Loading dashboard..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading dashboard...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </DashboardLayout>
     )
   }

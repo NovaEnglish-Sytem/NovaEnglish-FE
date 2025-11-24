@@ -14,6 +14,7 @@ import { BsPlusCircle } from 'react-icons/bs'
 import { categoriesApi } from '../lib/api.js'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import EmptyState from '../components/organisms/EmptyState.jsx'
 
 export const TutorManageQuestionsDetail = () => {
@@ -48,6 +49,8 @@ export const TutorManageQuestionsDetail = () => {
   const [blockAddOpen, setBlockAddOpen] = useState(false)
   const [showPublishedWarning, setShowPublishedWarning] = useState(false)
   const [publishedPackagesList, setPublishedPackagesList] = useState([])
+
+  const showInitialLoading = useDelayedSpinner(loading && !isAdding && !isDeleting, 700)
 
   useEffect(() => {
     let mounted = true
@@ -163,7 +166,22 @@ export const TutorManageQuestionsDetail = () => {
   }
 
   // Loading state
-  if (loading || isAdding || isDeleting) {
+  if (loading && !isAdding && !isDeleting) {
+    return (
+      <DashboardLayout
+        rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} />}
+        sidebarItems={navigationItems}
+        onLogout={handleLogout}
+      >
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading category...'}
+          fullPage={true}
+        />
+      </DashboardLayout>
+    )
+  }
+
+  if (isAdding || isDeleting) {
     return (
       <DashboardLayout
         rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} />}

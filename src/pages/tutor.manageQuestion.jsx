@@ -15,6 +15,7 @@ import ConfirmDialog from '../components/molecules/ConfirmDialog.jsx'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import EmptyState from '../components/organisms/EmptyState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 export const TutorManageQuestions = () => {
   const navigate = useNavigate()
@@ -51,6 +52,8 @@ export const TutorManageQuestions = () => {
   const [editingCategory, setEditingCategory] = useState(null) // {id, name} when editing
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
   const [pendingName, setPendingName] = useState('')
+
+  const showInitialLoading = useDelayedSpinner(loading, 700)
 
   // Map DB packages to card items (use DB title directly)
   const mapPackagesToItems = (packages = [], _categoryName = '') =>
@@ -192,7 +195,10 @@ export const TutorManageQuestions = () => {
         sidebarItems={navigationItems}
         onLogout={handleLogout}
       >
-        <LoadingState message="Loading questions..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading questions...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </DashboardLayout>
     )
   }

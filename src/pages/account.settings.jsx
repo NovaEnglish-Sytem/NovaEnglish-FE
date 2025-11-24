@@ -15,6 +15,7 @@ import LoadingState from '../components/organisms/LoadingState.jsx'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { AuthModal } from '../components/molecules/AuthModal.jsx'
 import ConfirmDialog from '../components/molecules/ConfirmDialog.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 const getErrorMessage = (error) => {
   return error?.response?.data?.error || error?.message || 'An error occurred'
@@ -48,6 +49,8 @@ export default function AccountSettings() {
   const [afterDeleteNavigate, setAfterDeleteNavigate] = useState(false)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [validationMessage, setValidationMessage] = useState('')
+
+  const showInitialLoading = useDelayedSpinner(isLoading, 700)
 
   // Load user profile on mount
   useEffect(() => {
@@ -350,7 +353,10 @@ export default function AccountSettings() {
   if (isLoading) {
     return (
       <AuthLayout>
-        <LoadingState message="Loading profile..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading profile...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </AuthLayout>
     )
   }
@@ -500,22 +506,24 @@ export default function AccountSettings() {
             </div>
           </div>
 
-          {/* Danger delete account block */}
-          <div className="mt-6">
-            <div className="relative w-full py-3 sm:h-12 rounded-md border border-[#ff5722] px-4 flex flex-col sm:flex-row items-center justify-between">
-              <div>
-                <h2 className="font-medium text-[#ff5722] text-base leading-normal">
-                  Delete This Account
-                </h2>
-                <p className="text-[#ff5722] text-[10px] leading-normal -mt-0.5">
-                  This action is permanent and cannot be undone.
-                </p>
+          {/* Danger delete account block (STUDENT only) */}
+          {user?.role === 'STUDENT' && (
+            <div className="mt-6">
+              <div className="relative w-full py-3 sm:h-12 rounded-md border border-[#ff5722] px-4 flex flex-col sm:flex-row items-center justify-between">
+                <div>
+                  <h2 className="font-medium text-[#ff5722] text-base leading-normal">
+                    Delete This Account
+                  </h2>
+                  <p className="text-[#ff5722] text-[10px] leading-normal -mt-0.5">
+                    This action is permanent and cannot be undone.
+                  </p>
+                </div>
+                <Button variant="danger" onClick={handleDeleteAccount} className="h-[31px] text-xs px-4 w-full sm:w-auto mt-3 sm:mt-0">
+                  DELETE
+                </Button>
               </div>
-              <Button variant="danger" onClick={handleDeleteAccount} className="h-[31px] text-xs px-4 w-full sm:w-auto mt-3 sm:mt-0">
-                DELETE
-              </Button>
             </div>
-          </div>
+          )}
 
           <div className="mt-12 flex justify-center">
             <Button

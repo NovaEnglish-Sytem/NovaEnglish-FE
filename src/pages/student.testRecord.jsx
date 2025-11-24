@@ -13,6 +13,7 @@ import { studentApi } from '../lib/api.js'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import EmptyState from '../components/organisms/EmptyState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import { Spinner } from '../components/atoms/Spinner.jsx'
 import { useActiveTestSession } from '../hooks/useActiveTestSession.js'
 
@@ -28,6 +29,8 @@ export const StudentTestRecord = () => {
   const [pageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  
+  const showInitialLoading = useDelayedSpinner(loading && records.length === 0, 700)
   
   // Check for active test session and auto-submit expired sessions
   useActiveTestSession({ autoRedirect: true, checkOnMount: true })
@@ -120,7 +123,9 @@ export const StudentTestRecord = () => {
         }
         centerHeaderSlot={<TopNav items={navigationItems} className="hidden lg:flex" />}
       >
-        <LoadingState message="Loading test records..." />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading test records...'}
+        />
       </AppLayout>
     )
   }

@@ -12,6 +12,7 @@ import { TbArrowsSort, TbArrowUp, TbArrowDown } from 'react-icons/tb'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import EmptyState from '../components/organisms/EmptyState.jsx'
+import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 
 export const TutorStudentProgress = () => {
   const navigate = useNavigate()
@@ -31,6 +32,8 @@ export const TutorStudentProgress = () => {
   const [students, setStudents] = useState([])
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
+
+  const showInitialLoading = useDelayedSpinner(loading && students.length === 0 && !error, 700)
 
   const handleLogout = async () => {
     try {
@@ -149,7 +152,10 @@ export const TutorStudentProgress = () => {
         sidebarItems={navigationItems}
         onLogout={handleLogout}
       >
-        <LoadingState message="Loading students..." minHeight="min-h-[calc(100vh-100px)]" />
+        <LoadingState
+          message={showInitialLoading ? 'Please wait...' : 'Loading students...'}
+          minHeight="min-h-[calc(100vh-100px)]"
+        />
       </DashboardLayout>
     )
   }
