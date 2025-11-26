@@ -254,20 +254,33 @@ export default function MediaUploader({
         if (res?.ok && res.data?.asset?.publicUrl) {
           return res.data.asset.publicUrl
         }
+
+        // Explicit handling for payload too large
         if (res && res.status === 413) {
+          const maxMb = type === 'AUDIO' ? envAudioMb : envImageMb
+          const label = type === 'AUDIO' ? 'Audio' : 'Image'
           setErrorModal({
             open: true,
             title: 'File Too Large',
-            message: res?.error || 'File exceeds maximum allowed size.'
+            message: `${label} size exceeds maximum allowed (${maxMb}MB).`
           })
           return null
         }
+
+        // Retry on transient errors a couple of times
         if (attempt < 2 && transient.has(res?.status || 0)) {
           attempt += 1
           await new Promise(r => setTimeout(r, 400 * attempt))
           continue
         }
-        throw new Error(res?.error || 'UPLOAD_FAILED')
+
+        // Non-transient error: show a generic upload failure message
+        setErrorModal({
+          open: true,
+          title: 'Upload Failed',
+          message: res?.error || 'Failed to upload media. Please try again.'
+        })
+        return null
       }
   }
 
@@ -420,7 +433,7 @@ export default function MediaUploader({
   return (
     <div className={['w-full', className].filter(Boolean).join(' ')}>
     <ConfirmDialog
-      open={errorModal.open}
+      isOpen={errorModal.open}
       onClose={() => setErrorModal({ open: false, title: '', message: '' })}
       onConfirm={() => setErrorModal({ open: false, title: '', message: '' })}
       title={errorModal.title || 'Error'}
