@@ -88,19 +88,11 @@ function App() {
             />
             <Route
               path={ROUTES.privacyPolicy}
-              element={
-                <PublicRoute>
-                  <PrivacyPolicy />
-                </PublicRoute>
-              }
+              element={<PrivacyPolicy />}
             />
             <Route
               path={ROUTES.terms}
-              element={
-                <PublicRoute>
-                  <Terms />
-                </PublicRoute>
-              }
+              element={<Terms />}
             />
 
             {/* Student Routes */}

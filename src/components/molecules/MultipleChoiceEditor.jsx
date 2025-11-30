@@ -63,7 +63,7 @@ export default function MultipleChoiceEditor({
         label="Question Text"
         value={v.text}
         onChange={(e) => set({ text: e.target.value })}
-        placeholder="Type the question here"
+        placeholder="Type question here"
         error={errors.text}
         className="min-h-0"
       />
@@ -89,7 +89,7 @@ export default function MultipleChoiceEditor({
                 onChange={(e) => setOption(i, e.target.value)}
                 placeholder={`Option ${i + 1}`}
                 className={[
-                  'flex-1 h-11 rounded-[5px] px-3 outline-none border focus:border-transparent focus:ring-2 transition-all duration-200',
+                  'flex-1 w-full h-11 rounded-[5px] px-3 outline-none border focus:border-transparent focus:ring-2 transition-all duration-200',
                   errors?.options && errors.options[i] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-[#007a33]'
                 ].join(' ')}
                 aria-invalid={Boolean(errors?.options && errors.options[i])}

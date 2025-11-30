@@ -61,11 +61,6 @@ input[type="password"]::-ms-clear {
   display: none;
 }
 
-/* WebKit (conservative; some versions expose decoration container) */
-input[type="password"]::-webkit-textfield-decoration-container {
-  display: none;
-}
-
 /* ================= CKEditor integration tweaks ================= */
 /* Ensure consistent editor height without flicker on focus */
 .story-editor .ck-editor__editable,

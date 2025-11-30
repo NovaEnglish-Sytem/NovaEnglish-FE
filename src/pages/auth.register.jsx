@@ -175,42 +175,45 @@ export const Register = () => {
         gender: String(formData.gender).toUpperCase(),
       }
 
-      await authApi.register(payload)
+      const res = await authApi.register(payload)
+
+      if (!res.ok) {
+        let title = "Can't sign up"
+        let message = 'Something went wrong. Please try again.'
+        const status = res.status
+        const msg = String(res.error || '').toLowerCase()
+
+        if (status === 409) {
+          message = 'This email is already registered. Use a different email or try logging in.'
+        } else if (status === 400) {
+          if (msg.includes('invalid email domain')) {
+            message = 'That email domain looks invalid. Please use a valid email address.'
+          } else if (msg.includes('no mx records')) {
+            message = "We can't reach that email's domain. Please use a different email."
+          } else if (msg.includes('mx lookup failed')) {
+            message = "We couldn't verify your email right now. Try a different email or try again later."
+          } else {
+            message = 'Please check your details and try again.'
+          }
+        }
+
+        setModalContent({
+          title,
+          message,
+          type: 'error'
+        })
+        setShowModal(true)
+        return
+      }
 
       // Show success modal
       setModalContent({
         title: "You're almost there!",
-        message: 'We created your account. Please check your email to verify, then come back to sign in.',
+        message: 'Your account has been created. Please check your inbox for our verification email (and your spam or junk folder if you do not see it), then return here to sign in.',
         type: 'success'
       })
       setShowModal(true)
 
-    } catch (error) {
-      // Map errors to requested copy
-      let title = "Can't sign up"
-      let message = 'Something went wrong. Please try again.'
-      const status = error?.status
-      const msg = String(error?.message || '').toLowerCase()
-      if (status === 409) {
-        message = 'This email is already registered. Use a different email or try logging in.'
-      } else if (status === 400) {
-        if (msg.includes('invalid email domain')) {
-          message = 'That email domain looks invalid. Please use a valid email address.'
-        } else if (msg.includes('no mx records')) {
-          message = "We can't reach that email's domain. Please use a different email."
-        } else if (msg.includes('mx lookup failed')) {
-          message = "We couldn't verify your email right now. Try a different email or try again later."
-        } else {
-          message = 'Please check your details and try again.'
-        }
-      }
-
-      setModalContent({
-        title,
-        message,
-        type: 'error'
-      })
-      setShowModal(true)
     } finally {
       setIsSubmitting(false)
     }

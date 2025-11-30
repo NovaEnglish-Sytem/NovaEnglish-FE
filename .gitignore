@@ -38,3 +38,17 @@ next-api/nul
 
 # ignore all file media
 /next-api/uploads
+
+# Playwright
+# Core config & test directories
+/playwright.config.*
+/tests/
+/.playwright/
+
+# Outputs & reports
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+.github

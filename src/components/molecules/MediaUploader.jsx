@@ -439,7 +439,7 @@ export default function MediaUploader({
       title={errorModal.title || 'Error'}
       message={errorModal.message}
       confirmText="OK"
-      hideCancel
+      cancelText=""
     />
     <ConfirmDialog
       isOpen={failedModal.open}

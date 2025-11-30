@@ -59,7 +59,7 @@ const navigate = useNavigate()
           setModalContent({
             type: 'warning',
             title: 'Email Verification Required',
-            message: 'Your email has not been verified. Please check your inbox and verify your account to continue.',
+            message: 'Your email address has not been verified yet. Please check your inbox (and your spam or junk folder) for our verification email, then follow the instructions to activate your account.',
           })
         } else if (status === 401 || status === 400) {
           setModalContent({
@@ -157,12 +157,12 @@ const navigate = useNavigate()
       const res = await authApi.resendVerification(email)
       if (!res.ok) {
         if (res.status === 429) {
-          setModalContent({ type: 'warning', title: 'Too Many Attempts', message: 'You have requested too many verification emails. Please wait a few minutes before trying again.' })
+          setModalContent({ type: 'warning', title: 'Too Many Attempts', message: 'You have requested several verification emails in a short time. Please wait a few minutes before trying again.' })
         } else {
-          setModalContent({ type: 'error', title: 'Resend Failed', message: 'Failed to resend verification email. Please try again later.' })
+          setModalContent({ type: 'error', title: 'Resend Failed', message: 'We could not resend the verification email at the moment. Please try again shortly.' })
         }
       } else {
-        setModalContent({ type: 'success', title: 'Verification Email Sent', message: 'A new verification link has been sent to your email. Please check your inbox.' })
+        setModalContent({ type: 'success', title: 'Verification Email Sent', message: 'We have sent a new verification link to your email address. Please check your inbox and also your spam or junk folder.' })
       }
     } finally {
       setResendLoading(false)

@@ -193,6 +193,24 @@ export const TutorCreateQuestions = () => {
   const isStoryVisible = showStorySection || forceShowStory
   const isInstructionsVisible = showInstructionsSection || forceShowInstructions
 
+  const autosaveBadgeText = useMemo(() => {
+    if (saveStatus === 'saving') return 'Saving…'
+    if (saveStatus === 'saved' && lastSavedAt) {
+      try {
+        const d = new Date(lastSavedAt)
+        const h = String(d.getHours()).padStart(2, '0')
+        const m = String(d.getMinutes()).padStart(2, '0')
+        const s = String(d.getSeconds()).padStart(2, '0')
+        return `Saved at ${h}:${m}:${s}`
+      } catch {
+        return 'Saved'
+      }
+    }
+    if (saveStatus === 'offline') return 'Offline – autosave paused'
+    if (saveStatus === 'error') return 'Autosave failed'
+    return ''
+  }, [saveStatus, lastSavedAt])
+
   useEffect(() => {
     if (activeTab === 'preview') {
       // Pre-populate preview answers with correct answers from questions
@@ -1292,20 +1310,10 @@ export const TutorCreateQuestions = () => {
         cancelText=""
       />
 
-      {/* Autosave status indicator */}
-      {activeTab === 'create' && (
+      {/* Autosave status indicator - only render when there is badge text */}
+      {activeTab === 'create' && autosaveBadgeText && (
         <div className="fixed bottom-4 left-4 z-40 rounded-full bg-white/90 backdrop-blur px-3 py-1 border border-gray-200 shadow-sm text-xs text-gray-600">
-          {saveStatus === 'saving' && 'Saving…'}
-          {saveStatus === 'saved' && lastSavedAt && (() => {
-            const d = new Date(lastSavedAt)
-            const h = String(d.getHours()).padStart(2, '0')
-            const m = String(d.getMinutes()).padStart(2, '0')
-            const s = String(d.getSeconds()).padStart(2, '0')
-            return <>Saved at {h}:{m}:{s}</>
-          })()}
-          {saveStatus === 'offline' && 'Offline – autosave paused'}
-          {saveStatus === 'error' && 'Autosave failed'}
-          {saveStatus === 'idle' && ''}
+          {autosaveBadgeText}
         </div>
       )}
 

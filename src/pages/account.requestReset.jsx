@@ -39,11 +39,11 @@ export const RequestReset = () => {
       const res = await authApi.resendVerification(email, { body: { probeOnly: true } })
       if (!res.ok) {
         if (res.status === 404) {
-          setModalContent({ type: 'error', title: 'Email not registered', message: 'This email is not registered.' })
+          setModalContent({ type: 'error', title: 'Email Not Registered', message: 'We could not find an account with this email address.' })
         } else if (res.status === 429) {
-          setModalContent({ type: 'warning', title: 'Too Many Attempts', message: 'Too many attempts. Please try again later.' })
+          setModalContent({ type: 'warning', title: 'Too Many Attempts', message: 'You have made several requests in a short time. Please wait a few minutes before trying again.' })
         } else {
-          setModalContent({ type: 'error', title: 'Request Failed', message: 'Something went wrong. Please try again.' })
+          setModalContent({ type: 'error', title: 'Request Failed', message: 'We could not process your request at the moment. Please try again shortly.' })
         }
         setShowModal(true)
         return
@@ -57,7 +57,7 @@ export const RequestReset = () => {
         setModalContent({
           type: 'success',
           title: 'Reset Link Sent',
-          message: 'If your email is registered and verified, you will receive a password reset link shortly. Please check your inbox.',
+          message: 'If your email is registered and verified, you will receive a password reset link shortly. Please check your inbox and also your spam or junk folder.',
         })
         setShowModal(true)
         setPageSending(false)
@@ -66,7 +66,7 @@ export const RequestReset = () => {
         setModalContent({
           type: 'warning',
           title: 'Email Verification Required',
-          message: 'Your email has not been verified. Please check your inbox and verify your account to continue.',
+          message: 'Your email address has not been verified yet. Please check your inbox (and your spam or junk folder) for our verification email, then follow the instructions to activate your account.',
         })
         setShowModal(true)
       }
@@ -80,12 +80,12 @@ export const RequestReset = () => {
     try {
       const res = await authApi.resendVerification(email)
       if (res.ok) {
-        setModalContent({ type: 'success', title: 'Verification Email Sent', message: 'We sent a verification link to your email. Please check your inbox.' })
+        setModalContent({ type: 'success', title: 'Verification Email Sent', message: 'We have sent a verification link to your email address. Please check your inbox and also your spam or junk folder.' })
       } else {
-        let message = 'Something went wrong. Please try again.'
-        if (res.status === 404) message = 'Email not registered.'
-        else if (res.status === 429) message = 'Too many attempts. Please try again later.'
-        setModalContent({ type: 'error', title: "Can't send verification", message })
+        let message = 'We could not send the verification email at the moment. Please try again shortly.'
+        if (res.status === 404) message = 'We could not find an account with this email address.'
+        else if (res.status === 429) message = 'You have made several requests in a short time. Please wait a few minutes before trying again.'
+        setModalContent({ type: 'error', title: "Unable to Send Verification Email", message })
       }
     } finally {
       setShowModal(true)
@@ -140,7 +140,7 @@ export const RequestReset = () => {
               className="w-full"
               disabled={isSubmitting}
             >
-              {pageSending ? 'SENDING...' : 'SEND VERIFICATION LINK'}
+              {pageSending ? 'SENDING...' : 'SEND RESET LINK'}
             </Button>
           </div>
         </Card>
