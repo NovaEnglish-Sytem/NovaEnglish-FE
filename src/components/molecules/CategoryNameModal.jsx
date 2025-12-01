@@ -55,6 +55,7 @@ export const CategoryNameModal = ({
       onClose={() => (!saving ? onCancel?.() : null)}
       className="p-5"
       ariaLabelledby="category-modal-title"
+      lockScroll={false}
     >
       <form onSubmit={handleSubmit}>
         <h2 id="category-modal-title" className="text-lg font-semibold text-gray-700 mb-3">

@@ -167,7 +167,7 @@ export const StudentTestRecord = () => {
             <button
               type="button"
               onClick={safeBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer"
+              className="hidden md:inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer"
               aria-label="Back"
             >
               <HiArrowLeft className="w-5 h-5" />

@@ -42,7 +42,7 @@ function ScrollToTop() {
 function App() {
   return (
     <AuthProvider>
-      <ErrorBoundary fallback={<ThemedErrorFallback />}>
+      <ErrorBoundary fallback={ThemedErrorFallback}>
         <ScrollToTop />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

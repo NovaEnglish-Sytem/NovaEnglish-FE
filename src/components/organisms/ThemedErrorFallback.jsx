@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
 import { classes } from '../../config/theme/tokens.js'
-import { ROUTES } from '../../config/routes.js'
 import { Button } from '../atoms/Button.jsx'
 import { HiOutlineExclamationTriangle, HiOutlineChevronDown, HiOutlineChevronUp } from 'react-icons/hi2'
 
@@ -19,7 +17,7 @@ export default function ThemedErrorFallback({ error, onRetry }) {
   }
 
   const title = 'Something went wrong'
-  const subtitle = 'An unexpected error occurred. You can try again, reload the page, or go back to the home page.'
+  const subtitle = 'An unexpected error occurred. You can try again or reload the page.'
 
   return (
     <div className="w-full min-h-screen grid place-items-center px-4 py-8">
@@ -31,27 +29,15 @@ export default function ThemedErrorFallback({ error, onRetry }) {
         <h1 className="mt-4 text-xl sm:text-2xl font-semibold text-gray-900">{title}</h1>
         <p className="mt-2 text-sm sm:text-base text-gray-600 mb-10">{subtitle}</p>
 
-        {/* Try Again button appears only if onRetry exists. */}
-        {typeof onRetry === "function" && (
-          <>
-            <Button onClick={() => onRetry()} className="sm:w-1/2 w-full">
-              Try Again
-            </Button>
-            <fieldset className="border-t border-gray-300 my-6">
-              <legend className="mx-auto px-3 text-gray-500 text-sm">or choose below</legend>
-            </fieldset>
-          </>
-        )}
-
         <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-center">
           <Button variant="outline" onClick={handleReload} className="sm:w-auto w-full">
             Reload Page
           </Button>
-          <Link to={ROUTES.login} className="sm:w-auto w-full">
-            <Button variant="ghost" className="w-full">
-              Go to Home
+          {typeof onRetry === 'function' && (
+            <Button onClick={() => onRetry()} className="sm:w-auto w-full">
+              Try Again
             </Button>
-          </Link>
+          )}
         </div>
 
         {isDev && error ? (

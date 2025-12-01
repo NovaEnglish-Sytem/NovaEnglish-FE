@@ -107,6 +107,7 @@ export const ConfirmDialog = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      lockScroll={false}
       backdropClassName="backdrop-blur-none bg-transparent"
       ariaLabelledby={titleId}
       ariaDescribedby={descId}

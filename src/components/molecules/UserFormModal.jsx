@@ -135,9 +135,10 @@ const UserFormModal = ({
       onClose={onClose}
       className="w-full"
       maxWidthClass="max-w-2xl"
+      lockScroll={false}
       closeOnBackdrop={false}
     >
-      <div className="p-6">
+      <div className="p-6 flex flex-col max-h-[90vh]">
         <button
           type="button"
           aria-label="Close"
@@ -147,7 +148,7 @@ const UserFormModal = ({
           ×
         </button>
         <h2 className="text-lg font-semibold mb-4 text-center pr-8">{title}</h2>
-        <div className="space-y-4 max-h-[70vh] md:overflow-y-auto overflow-hidden pl-2 pr-5">
+        <div className="space-y-4 flex-1 min-h-0 overflow-y-auto pl-2 pr-5">
           <Input
             id={`${mode}FullName`}
             label="Full Name"

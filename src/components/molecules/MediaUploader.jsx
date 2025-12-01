@@ -84,6 +84,15 @@ export default function MediaUploader({
 
   const handleFiles = (files) => {
     if (!files || files.length === 0) return
+    // Disallow selecting or dropping multiple files in a single action to keep UX predictable
+    if (files.length > 1) {
+      setErrorModal({
+        open: true,
+        title: 'Multiple Files Selected',
+        message: 'You can upload only one file at a time. Please select a single image or audio file and try again.'
+      })
+      return
+    }
     let changed = false
     const next = { ...value }
     for (const f of files) {
@@ -226,7 +235,7 @@ export default function MediaUploader({
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = accept
-    input.multiple = true
+    input.multiple = false
     input.onchange = (ev) => {
       const files = ev.target.files
       if (files) handleFiles(files)
@@ -513,7 +522,6 @@ export default function MediaUploader({
                   className="w-full h-full object-contain"
                   onError={() => {
                     setFailedModal({ open: true, message: 'Failed to load image' })
-                    onChange?.({ ...value, imageFile: null, imageUrl: '' })
                   }}
                 />
               )}
@@ -548,7 +556,6 @@ export default function MediaUploader({
                   onTimeUpdate={(e) => { try { if (e?.target) { e.target._lastTime = e.target.currentTime } } catch(_) {} }}
                   onError={() => {
                     setFailedModal({ open: true, message: 'Failed to load audio' })
-                    onChange?.({ ...value, audioFile: null, audioUrl: '' })
                   }}
                 >
                   Your browser does not support the audio element.

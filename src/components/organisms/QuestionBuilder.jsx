@@ -120,8 +120,12 @@ export default function QuestionBuilder({
         q = { ...base, text: '', options: ['', '', '', ''], correctIndex: null }
       } else if (type === 'TFNG') {
         q = { ...base, text: '', correctTFNG: null }
-      } else {
+      } else if (type === 'SHORT') {
         q = { ...base, shortTemplate: '' }
+      } else if (type === 'MATCHING') {
+        q = { ...base, matchingTemplate: '' }
+      } else {
+        q = { ...base }
       }
       const nextQs = [...(p.questions || []), q]
       setPage({ id: pageId || p.id, questions: nextQs })
@@ -133,8 +137,18 @@ export default function QuestionBuilder({
       })
     } catch (_) {
       const base = { id: generateUniqueId(), type, media: { imageFile: null, audioFile: null, imageUrl: '', audioUrl: '' } }
-      const q = type === 'MCQ' ? { ...base, text: '', options: ['', '', '', ''], correctIndex: null }
-        : (type === 'TFNG' ? { ...base, text: '', correctTFNG: null } : { ...base, shortTemplate: '' })
+      let q
+      if (type === 'MCQ') {
+        q = { ...base, text: '', options: ['', '', '', ''], correctIndex: null }
+      } else if (type === 'TFNG') {
+        q = { ...base, text: '', correctTFNG: null }
+      } else if (type === 'SHORT') {
+        q = { ...base, shortTemplate: '' }
+      } else if (type === 'MATCHING') {
+        q = { ...base, matchingTemplate: '' }
+      } else {
+        q = { ...base }
+      }
       setPage({ questions: [...(p.questions || []), q] })
     }
   }
@@ -281,6 +295,11 @@ export default function QuestionBuilder({
                   onChange={(vv) => setQuestion(i, vv)}
                   errors={localErrors[i] || {}}
                   questionNumber={currentNum}
+                  isPublished={isPublished}
+                  onRequireUnpublish={onRequireUnpublish}
+                  onMediaUploaded={onMediaUploaded}
+                  isMediaVisible={Boolean(q?.media?.imageFile || q?.media?.audioFile || q?.media?.imageUrl || q?.media?.audioUrl || mediaOpenById[q.id])}
+                  onToggleMedia={() => toggleMediaOpen(q.id)}
                 />
               </div>
             )}

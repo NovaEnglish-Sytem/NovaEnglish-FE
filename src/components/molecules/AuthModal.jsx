@@ -53,6 +53,7 @@ export const AuthModal = ({
       onClose={onClose}
       title=""
       size="sm"
+      lockScroll={false}
     >
       <div className="text-center p-6 relative">
         <button

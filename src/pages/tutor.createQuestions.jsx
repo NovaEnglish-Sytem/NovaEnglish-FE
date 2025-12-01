@@ -31,7 +31,7 @@ export const TutorCreateQuestions = () => {
   const _location = useLocation()
   const { id: packageId } = useParams()
   const { user, logout } = useAuth()
-
+  
   const handleLogout = async () => {
     try { await logout() } catch (_) {}
     navigate(ROUTES.login, { replace: true })
@@ -1080,7 +1080,6 @@ export const TutorCreateQuestions = () => {
               </div>
 
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-700">Preview</h2>
                 <span className="text-xs text-gray-500">Student view - Page {currentPageIndex + 1}</span>
               </div>
               <PreviewBlock 
@@ -1090,6 +1089,16 @@ export const TutorCreateQuestions = () => {
                 previewAnswers={previewAnswers}
                 setPreviewAnswers={setPreviewAnswers}
               />
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('create')}
+                  className={[classes.button.base, classes.button.outline, 'h-9 px-4 text-sm'].join(' ')}
+                  aria-label="Back to Create"
+                >
+                  Back to Create
+                </button>
+              </div>
             </div>
           )}
 
