@@ -27,10 +27,6 @@ const formatMMSS = (secs) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
- 
-
- 
-
 export const StudentTestPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -39,6 +35,7 @@ export const StudentTestPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [redirecting, setRedirecting] = useState(false)
+  const topRef = useRef(null)
   const submittingRef = useRef(false)
   const dirtyRef = useRef(false) // Track if answers changed since last DB sync
   const saveTimeoutRef = useRef(null) // Debounce localStorage writes
@@ -88,6 +85,13 @@ export const StudentTestPage = () => {
   const syncIntervalRef = useRef(null)
   // removed unused: lastSyncRef
   const [imageModal, setImageModal] = useState({ open: false, src: '', alt: '' })
+
+  useEffect(() => {
+    if (!topRef.current) return
+    try {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } catch {}
+  }, [currentPageIndex])
 
   // Countdown modals (draft + expired)
   const draftModal = useCountdownModal(TEST_CONFIG.MODAL.COUNTDOWN_START, () => handleConfirmDraft())
@@ -1135,7 +1139,7 @@ export const StudentTestPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-100" ref={topRef}>
       <div className="max-w-[1200px] mx-auto px-4 py-6">
         {/* Header - One Line: Category | Progress Bar + % | Timer | Sync Status */}
         <header className="mb-6">

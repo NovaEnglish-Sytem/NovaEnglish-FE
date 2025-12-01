@@ -513,23 +513,25 @@ export default function MediaUploader({
         </div>
 
         {allowImage && (uploadingImage || imgPreview) && (
-          <div className="mt-4 flex items-start gap-3">
-            <div className="relative h-24 w-32 bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
-              {imgPreview && (
-                <img
-                  src={imgPreview}
-                  alt="Uploaded"
-                  className="w-full h-full object-contain"
-                  onError={() => {
-                    setFailedModal({ open: true, message: 'Failed to load image' })
-                  }}
-                />
-              )}
-              {uploadingImage && (
-                <div className="absolute inset-0 grid place-items-center rounded-md bg-white/70">
-                  <Spinner size={24} />
-                </div>
-              )}
+          <div className="mt-4 flex flex-col sm:flex-row items-start gap-3">
+            <div className="relative w-full max-w-sm bg-gray-50 border border-gray-200 rounded-md overflow-hidden">
+              <div className="aspect-video w-full">
+                {imgPreview && (
+                  <img
+                    src={imgPreview}
+                    alt="Uploaded"
+                    className="w-full h-full object-contain"
+                    onError={() => {
+                      setFailedModal({ open: true, message: 'Failed to load image' })
+                    }}
+                  />
+                )}
+                {uploadingImage && (
+                  <div className="absolute inset-0 grid place-items-center rounded-md bg-white/70">
+                    <Spinner size={24} />
+                  </div>
+                )}
+              </div>
             </div>
             <button
               type="button"
@@ -542,8 +544,8 @@ export default function MediaUploader({
         )}
 
         {allowAudio && (uploadingAudio || audioPreview) && (
-          <div className="mt-4 flex items-start gap-3">
-            <div className="relative h-10 w-72">
+          <div className="mt-4 flex flex-col sm:flex-row items-start gap-3">
+            <div className="relative w-full max-w-md">
               {audioPreview && (
                 <audio
                   controls
@@ -551,7 +553,7 @@ export default function MediaUploader({
                   preload="metadata"
                   controlsList="nodownload noplaybackrate noremoteplayback"
                   onContextMenu={(e) => e.preventDefault()}
-                  className="h-10 w-72"
+                  className="w-full h-10"
                   onSeeking={(e) => { try { if (e?.target) { e.target.currentTime = e.target._lastTime || 0 } } catch(_) {} }}
                   onTimeUpdate={(e) => { try { if (e?.target) { e.target._lastTime = e.target.currentTime } } catch(_) {} }}
                   onError={() => {
