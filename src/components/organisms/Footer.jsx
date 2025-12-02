@@ -11,7 +11,7 @@ import gmail from '../../assets/Social Media/gmail.svg'
 import { ConfirmDialog } from '../molecules/ConfirmDialog.jsx'
 
 export const Footer = ({
-  information = ['User Guide', 'Privacy Policy', 'Terms &amp; Conditions'],
+  information = ['Privacy Policy', 'Terms &amp; Conditions'],
   contact = { email: 'dikhaarianda@gmail.com', phone: '081219540704' },
   social = [
     {name: 'instagram', icon:instagram, href:'#', alt:'instagram'},

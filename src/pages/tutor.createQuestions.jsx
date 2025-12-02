@@ -873,7 +873,7 @@ export const TutorCreateQuestions = () => {
         onLogout={handleLogoutClick}
         useExternalLogoutConfirm={true}
       >
-        <LoadingState message="Loading questions..." fullPage={true} />
+        <LoadingState message="Loading questions..." fullPage={false} minHeight="min-h-[calc(100vh-100px)]" />
       </DashboardLayout>
     )
   }

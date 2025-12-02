@@ -25,26 +25,23 @@ export const DashboardLayout = ({
   // We use a ref-count so navigating between tutor pages doesn't remove the class momentarily.
   useEffect(() => {
     const root = document.documentElement
-    const body = document.body
     const w = window
 
     w.__tutorGutterMounts = (w.__tutorGutterMounts || 0) + 1
     if (w.__tutorGutterMounts === 1) {
       root.classList.add('scrollbar-stable')
-      body.classList.add('scrollbar-stable')
     }
 
     return () => {
       w.__tutorGutterMounts = Math.max(0, (w.__tutorGutterMounts || 1) - 1)
       if (w.__tutorGutterMounts === 0) {
         root.classList.remove('scrollbar-stable')
-        body.classList.remove('scrollbar-stable')
       }
     }
   }, [])
 
   return (
-      <div className={["w-full overflow-x-auto min-h-screen lg:bg-[url('/leaf-bg-tutor.svg')] lg:bg-cover lg:bg-center lg:bg-fixed scrollbar-stable", className].filter(Boolean).join(' ')}
+      <div className={["w-full overflow-x-auto min-h-screen lg:bg-[url('/leaf-bg-tutor.svg')] lg:bg-cover lg:bg-center lg:bg-fixed", className].filter(Boolean).join(' ')}
       >
         <Header
           rightSlot={rightHeaderSlot}

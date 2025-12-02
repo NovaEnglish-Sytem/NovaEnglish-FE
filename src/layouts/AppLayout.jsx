@@ -17,7 +17,7 @@ export const AppLayout = ({
   onLogoClick,
 }) => {
   return (
-    <div className={['bg-neutral-100 w-full overflow-x-auto', className].filter(Boolean).join(' ')}>
+    <div className={['bg-neutral-100 w-full overflow-x-hidden', className].filter(Boolean).join(' ')}>
       {/* Header outside container to allow full-width background */}
       <Header
         rightSlot={rightHeaderSlot}
