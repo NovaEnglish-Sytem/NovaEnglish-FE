@@ -32,7 +32,7 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
           onClick={onCancel}
           className={[classes.button.base, classes.button.ghost, 'h-10 px-4'].join(' ')}
         >
-          Cancel
+          Close
         </button>
         <button
           type="button"

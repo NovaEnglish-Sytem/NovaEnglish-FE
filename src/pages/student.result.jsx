@@ -41,6 +41,22 @@ export const ResultPage = () => {
   }, [attemptId])
 
   useEffect(() => {
+    const handlePop = () => {
+      navigate(ROUTES.studentTestRecord, { replace: true, state: { fromResult: true } })
+    }
+
+    // Push a new state so that the first browser back triggers our handler
+    try {
+      window.history.pushState(null, '', window.location.href)
+    } catch {}
+
+    window.addEventListener('popstate', handlePop)
+    return () => {
+      window.removeEventListener('popstate', handlePop)
+    }
+  }, [navigate])
+
+  useEffect(() => {
     let mounted = true
     ;(async () => {
       try {
@@ -68,7 +84,7 @@ export const ResultPage = () => {
           navigate(ROUTES.studentDashboard, { replace: true })
           return
         }
-        
+
         setData(res.data || {})
       } catch (e) {
         if (!mounted) return
@@ -80,19 +96,6 @@ export const ResultPage = () => {
     })()
     return () => { mounted = false }
   }, [attemptId, navigate])
-
-  useEffect(() => {
-    const handlePopState = () => {
-      // When back is pressed, immediately go to test record list
-      navigate(ROUTES.studentTestRecord, { replace: true })
-    }
-    
-    window.addEventListener('popstate', handlePopState)
-    
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-    }
-  }, [])
 
   const recordAvg = Number(data?.recordInfo?.averageScore)
   const score = Number.isFinite(recordAvg) && recordAvg > 0 ? Math.round(recordAvg) : Math.round(Number(data?.totalScore) || 0)

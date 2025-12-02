@@ -483,25 +483,16 @@ export const StudentTestPage = () => {
 
   // Prevent back navigation (improved)
   useEffect(() => {
-    let blockCount = 0
-    
     const handlePopState = () => {
-      blockCount++
-      // Push state multiple times to make it harder to go back
-      for (let i = 0; i < 3; i++) {
-        window.history.pushState(null, '', window.location.href)
-      }
-      
-      // Only show alert every 3rd attempt to reduce annoyance
-      if (blockCount % 3 === 0) {
-        alert(TEST_MESSAGES.BACK_DISABLED)
-      }
+      // Lightweight: push a single state to neutralize browser back without
+      // creating long history chains that can cause issues in WebKit/Safari.
+      window.history.pushState(null, '', window.location.href)
     }
-    
-    // Initialize history state
+
+    // Initialize history state once on mount
     window.history.pushState(null, '', window.location.href)
     window.addEventListener('popstate', handlePopState)
-    
+
     return () => {
       window.removeEventListener('popstate', handlePopState)
     }

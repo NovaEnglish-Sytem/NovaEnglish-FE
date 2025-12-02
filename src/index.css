@@ -10,6 +10,11 @@
 
 html, body {
   overflow-x: hidden;
+}
+
+/* Pages that explicitly opt in (e.g. DashboardLayout) can add this class
+   to keep a stable vertical scrollbar gutter. */
+.scrollbar-stable {
   overflow-y: scroll;
 }
 
