@@ -8,6 +8,16 @@ export const PrivacyPolicy = () => {
   const [activeLang, setActiveLang] = React.useState('en')
 
   const handleBack = () => {
+    try {
+      if (typeof window !== 'undefined' && window.opener && window.opener !== window) {
+        window.close()
+        return
+      }
+      if (typeof window !== 'undefined' && window.history && window.history.length <= 1) {
+        window.close()
+        return
+      }
+    } catch (e) {}
     navigate(-1)
   }
 

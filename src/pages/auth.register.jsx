@@ -206,12 +206,22 @@ export const Register = () => {
         return
       }
 
-      // Show success modal
-      setModalContent({
-        title: "You're almost there!",
-        message: 'Your account has been created. Please check your inbox for our verification email (and your spam or junk folder if you do not see it), then return here to sign in.',
-        type: 'success'
-      })
+      const emailSent = res?.data?.emailSent
+
+      if (emailSent === false) {
+        setModalContent({
+          title: 'Account created, but email not sent',
+          message: 'Your account has been created, but we could not send the verification email right now. Please try again later or contact support if you still do not receive it.',
+          type: 'warning'
+        })
+      } else {
+        // Default: treat missing flag as sent, for backward compatibility
+        setModalContent({
+          title: "You're almost there!",
+          message: 'Your account has been created. Please check your inbox for our verification email, then return here to sign in.',
+          type: 'success'
+        })
+      }
       setShowModal(true)
 
     } finally {
@@ -344,9 +354,23 @@ export const Register = () => {
             label={
               <span className='text-gray-700'>
                 I agree to the{' '}
-                <Link to={ROUTES.terms} className={'underline text-[#0D7377] hover:text-[#0A4F52]'}>Terms &amp; Conditions</Link>
+                <Link
+                  to={ROUTES.terms}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={'underline text-[#0D7377] hover:text-[#0A4F52]'}
+                >
+                  Terms &amp; Conditions
+                </Link>
                 {' '}and{' '}
-                <Link to={ROUTES.privacyPolicy} className={'underline text-[#0D7377] hover:text-[#0A4F52]'}>Privacy Policy</Link>
+                <Link
+                  to={ROUTES.privacyPolicy}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={'underline text-[#0D7377] hover:text-[#0A4F52]'}
+                >
+                  Privacy Policy
+                </Link>
               </span>
             }
           />

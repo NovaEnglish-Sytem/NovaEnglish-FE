@@ -14,7 +14,7 @@ export const Footer = ({
   information = ['Privacy Policy', 'Terms &amp; Conditions'],
   contact = { email: 'dikhaarianda@gmail.com', phone: '081219540704' },
   social = [
-    {name: 'instagram', icon:instagram, href:'#', alt:'instagram'},
+    {name: 'instagram', icon:instagram, href:'https://www.instagram.com/withnovaenglish?igsh=OXdtYTVnOWE1dHhx', alt:'instagram'},
     {name: 'tiktok', icon:tiktok, href:'#', alt:'tiktok'},
     {name: 'facebook', icon:facebook, href:'#', alt:'facebook'}
   ],
@@ -201,7 +201,13 @@ export const Footer = ({
               <h3 className="text-lg font-semibold mb-4">Social Media</h3>
               <div className="flex items-center justify-center gap-6 sm:gap-8 md:gap-12">
               {social.map(({ name, icon, href = '#', alt }, idx) => (
-                <a key={name + idx} href={href} className="hover:opacity-80 transition-opacity" aria-label={alt ?? name}>
+                <a
+                  key={name + idx}
+                  href={href}
+                  className="hover:opacity-80 transition-opacity"
+                  aria-label={alt ?? name}
+                  onClick={(e) => onExternalClick(e, href, (alt || name || 'this link'))}
+                >
                   <img className="w-6 h-6 sm:w-8 sm:h-8 object-contain" alt={alt ?? name} src={icon} />
                 </a>
               ))}
@@ -212,7 +218,10 @@ export const Footer = ({
 
         {/* Copyright */}
         <div className="mt-10 border-t border-black/10 pt-4 text-center">
-          <p className="text-sm">© 2025 Nova English. All right reserved. v0000</p>
+          <p className="text-sm">
+            © 2025 Nova English. All rights reserved. <br/>
+            <span className="text-gray-500 ml-2"> v1.00</span>
+          </p>
         </div>
       </div>
 
