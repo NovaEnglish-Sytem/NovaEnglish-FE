@@ -224,7 +224,7 @@ export const TutorStudentProgress = () => {
                   className="py-3 px-4 font-medium whitespace-nowrap cursor-pointer select-none"
                   onClick={() => handleSort('bestAverageScore')}
                 >
-                  Band Score {headerSortIndicator('bestAverageScore')}
+                  Best Score {headerSortIndicator('bestAverageScore')}
                 </th>
                 <th
                   className="py-3 px-4 font-medium whitespace-nowrap cursor-pointer select-none"

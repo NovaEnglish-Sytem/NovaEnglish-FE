@@ -22,15 +22,15 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
 
   return (
     <div className="sticky bottom-0 border-t border-gray-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 px-4 py-3 rounded-b-[12px]">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
         <div className="text-xs text-gray-500 min-h-[20px]">
           {statusText}
         </div>
-        <div className="flex items-center justify-end gap-2 flex-wrap">
+        <div className="flex items-center justify-start sm:justify-end gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
         <button
           type="button"
           onClick={onCancel}
-          className={[classes.button.base, classes.button.ghost, 'h-10 px-4'].join(' ')}
+          className={[classes.button.base, classes.button.ghost, 'h-10 px-3 sm:px-4'].join(' ')}
         >
           Close
         </button>
@@ -41,7 +41,7 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
           className={[
             classes.button.base,
             classes.button.outline,
-            'h-10 px-4',
+            'h-10 px-3 sm:px-4',
             (isSaving || isPublished || !hasUnsavedChanges) ? 'opacity-50 cursor-not-allowed' : ''
           ].join(' ')}
           title={isPublished ? 'Unpublish to edit and save changes' : (!hasUnsavedChanges ? 'No changes to save' : undefined)}
@@ -51,7 +51,7 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
         <button
           type="button"
           onClick={onPreview}
-          className={[classes.button.base, classes.button.outline, 'h-10 px-4'].join(' ')}
+          className={[classes.button.base, classes.button.outline, 'h-10 px-3 sm:px-4'].join(' ')}
         >
           Preview
         </button>
@@ -72,7 +72,7 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
             className={[
               classes.button.base,
               classes.button.primary,
-              'h-10 px-4',
+              'h-10 px-3 sm:px-4',
               (!canPublish || isPublishing) ? 'opacity-50 cursor-not-allowed' : ''
             ].join(' ')}
           >

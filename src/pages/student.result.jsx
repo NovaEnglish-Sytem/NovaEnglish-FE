@@ -10,16 +10,30 @@ import { classes } from '../config/theme/tokens.js'
 import { studentApi } from '../lib/api.js'
 import { ROUTES } from '../config/routes.js'
 import { useRouteGuard, isValidUUID } from '../hooks/useRouteGuard.js'
+import { useAuth } from '../contexts/AuthContext.jsx'
+import { ConfirmDialog } from '../components/molecules/ConfirmDialog.jsx'
 
 export const ResultPage = () => {
   const navigate = useNavigate()
   const { attemptId } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [data, setData] = useState({ attempt: null, categories: [], level: null, avgScore: 0, feedback: null, levels: [], recordInfo: null })
-  
+  const [data, setData] = useState({ feedback: null, recordInfo: null })
+  const [feedbackDraft, setFeedbackDraft] = useState('')
+  const [savingFeedback, setSavingFeedback] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isEditingFeedback, setIsEditingFeedback] = useState(false)
+  const [showConfirmSave, setShowConfirmSave] = useState(false)
+  const { user } = useAuth()
+
+  const role = String(user?.role || '').toUpperCase()
+  const isStudent = role === 'STUDENT'
+  const isTutorOrAdmin = role === 'TUTOR' || role === 'ADMIN'
+  const homeRoute = (role === 'TUTOR' || role === 'ADMIN') ? ROUTES.tutorDashboard : ROUTES.studentDashboard
+
   const showInitialLoading = useDelayedSpinner(loading, 700)
-  
+
   // SECURITY: Validate attemptId format
   useRouteGuard({
     paramName: 'attemptId',
@@ -41,6 +55,8 @@ export const ResultPage = () => {
   }, [attemptId])
 
   useEffect(() => {
+    if (!isStudent) return
+
     const handlePop = () => {
       navigate(ROUTES.studentTestRecord, { replace: true, state: { fromResult: true } })
     }
@@ -54,7 +70,7 @@ export const ResultPage = () => {
     return () => {
       window.removeEventListener('popstate', handlePop)
     }
-  }, [navigate])
+  }, [navigate, isStudent])
 
   useEffect(() => {
     let mounted = true
@@ -63,9 +79,9 @@ export const ResultPage = () => {
         setLoading(true)
         setError(null)
         const res = await studentApi.result(attemptId)
-        
+
         if (!mounted) return
-        
+
         // Check if API response is valid
         if (!res.ok) {
           // If 404 or attempt not found, redirect to dashboard
@@ -77,16 +93,11 @@ export const ResultPage = () => {
           setError(res.error || 'Failed to load result')
           return
         }
-        
-        // Check if attempt data exists and is completed
-        if (!res.data || !res.data.completedAt) {
-          // Attempt not completed or invalid - redirect to dashboard
-          navigate(ROUTES.studentDashboard, { replace: true })
-          return
-        }
 
         setData(res.data || {})
+        setFeedbackDraft(res.data?.feedback || '')
       } catch (e) {
+
         if (!mounted) return
         // Network error or other exception - redirect to dashboard
         navigate(ROUTES.studentDashboard, { replace: true })
@@ -99,21 +110,69 @@ export const ResultPage = () => {
 
   const recordAvg = Number(data?.recordInfo?.averageScore)
   const score = Number.isFinite(recordAvg) && recordAvg > 0 ? Math.round(recordAvg) : Math.round(Number(data?.totalScore) || 0)
-  const levelRows = (Array.isArray(data?.levels) ? data.levels : []).map(r => ({ level: r.band, range: `${r.minScore} - ${r.maxScore}` }))
-  const practiceLevel = data?.bandScore || '-'
-  const practiceStatus = '' // Band score doesn't have status
   const feedbackText = data?.feedback || ''
   const recordInfo = data?.recordInfo || null
   const isRecordComplete = recordInfo?.isComplete || false
   const categoriesComplete = recordInfo?.categoriesComplete || 0
-  const categoriesTotal = recordInfo?.categoriesTotal || 0
+  const rawCategoriesTotal = recordInfo?.categoriesTotal || 0
+  const categoriesTotal = Math.max(rawCategoriesTotal, categoriesComplete)
 
   const fillPct = (val) => `${Math.max(0, Math.min(100, Math.round(val)))}%`
+
+  const handleClose = () => {
+    if (isStudent) {
+      navigate(ROUTES.studentTestRecord, { replace: true, state: { fromResult: true } })
+    } else {
+      if (window.history.length > 1) {
+        navigate(-1)
+      } else {
+        navigate(ROUTES.tutorDashboard, { replace: true })
+      }
+    }
+  }
+
+  const handleSaveFeedback = async () => {
+    if (!attemptId) return false
+    try {
+      setSavingFeedback(true)
+      setSaveError(null)
+      setSaveSuccess(false)
+      const res = await studentApi.updateResultFeedback(attemptId, feedbackDraft)
+      if (!res.ok) {
+        setSaveError(res.error || 'Failed to save feedback')
+        return false
+      }
+      const nextFeedback = res.data?.feedback || ''
+      setData(prev => ({ ...(prev || {}), feedback: nextFeedback }))
+      setFeedbackDraft(nextFeedback)
+      setSaveSuccess(true)
+      return true
+    } catch (e) {
+      setSaveError('Failed to save feedback')
+      return false
+    } finally {
+      setSavingFeedback(false)
+    }
+  }
+
+  const handleStartEdit = () => {
+    setIsEditingFeedback(true)
+    setFeedbackDraft(feedbackText || '')
+    setSaveError(null)
+    setSaveSuccess(false)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditingFeedback(false)
+    setFeedbackDraft(feedbackText || '')
+    setSaveError(null)
+    setShowConfirmSave(false)
+  }
 
   if (loading) {
     return (
       <div className="bg-neutral-100 min-h-screen">
-        <Header logoTo={ROUTES.studentDashboard} />
+        <Header logoTo={homeRoute} />
         <LoadingState
           message={showInitialLoading ? 'Please wait...' : 'Loading result...'}
           fullPage
@@ -125,7 +184,7 @@ export const ResultPage = () => {
   if (error) {
     return (
       <div className="bg-neutral-100 min-h-screen">
-        <Header logoTo={ROUTES.studentDashboard} />
+        <Header logoTo={homeRoute} />
         <ErrorState
           title="Failed to load result"
           message={error}
@@ -137,8 +196,8 @@ export const ResultPage = () => {
   }
 
   return (
-    <div className="bg-neutral-100 min-h-screen overflow-x-auto">
-      <Header logoTo={ROUTES.studentDashboard} />
+    <div className="bg-neutral-100 min-h-screen">
+      <Header logoTo={homeRoute} />
 
       <div className="grid justify-items-center [align-items:start]">
         <div className="max-w-[1440px] w-full px-4 box-border mt-14 sm:mt-16 md:mt-20 min-w-0">
@@ -182,28 +241,14 @@ export const ResultPage = () => {
               </div>
 
               <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
-                <div className="text-gray-500 text-lg sm:text-xl">Your Practice Level :</div>
-                <div className="flex items-end gap-2">
-                  <div className="text-[32px] md:text-[50px] font-medium text-gray-500 leading-none">{practiceLevel}</div>
-                  <div className="text-[20px] md:text-[25px] font-medium text-[#4da32f] leading-none pb-1">{practiceStatus ? `.${practiceStatus}` : ''}</div>
+                <div className="text-gray-500 text-sm sm:text-base text-center sm:text-left">
+                  {recordInfo && categoriesTotal > 0 && (
+                    <span>
+                      Completed <span className="font-semibold">{categoriesComplete} of {categoriesTotal}</span> categories.
+                    </span>
+                  )}
                 </div>
               </div>
-              
-              {recordInfo && !isRecordComplete && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-800 text-center">
-                    You have completed <span className="font-semibold">{categoriesComplete} of {categoriesTotal}</span> categories. Complete all categories to see your overall band score.
-                  </p>
-                </div>
-              )}
-              
-              {recordInfo && isRecordComplete && recordInfo.overallBandScore && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-sm text-green-800 text-center">
-                    Overall Band Score: <span className="font-bold text-lg">{recordInfo.overallBandScore}</span>
-                  </p>
-                </div>
-              )}
             </div>
           </section>
 
@@ -213,43 +258,93 @@ export const ResultPage = () => {
                 Feedback from <span className={[classes.textSuccess].join(' ')}>Nova English</span>
               </h3>
               <div className="my-4 border-t border-gray-300" />
-              <p className="text-gray-500 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
-                {feedbackText || 'No feedback available.'}
-              </p>
+              {isTutorOrAdmin ? (
+                <>
+                  <textarea
+                    className="w-full min-h-[160px] resize-vertical rounded-md border border-gray-300 px-3 py-2 text-gray-700 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 disabled:text-gray-500"
+                    value={isEditingFeedback ? feedbackDraft : feedbackText}
+                    onChange={(e) => {
+                      setFeedbackDraft(e.target.value)
+                      setSaveSuccess(false)
+                    }}
+                    placeholder="No feedback yet"
+                    disabled={!isEditingFeedback}
+                  />
+                  {saveError && (
+                    <p className="mt-2 text-sm text-red-600">{saveError}</p>
+                  )}
+                  {saveSuccess && !saveError && (
+                    <p className="mt-2 text-sm text-green-600">Feedback saved.</p>
+                  )}
+                  <div className="mt-4 flex justify-end gap-3">
+                    {isEditingFeedback ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="md"
+                          className="w-full sm:w-auto"
+                          onClick={handleCancelEdit}
+                          disabled={savingFeedback}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="md"
+                          className="w-full sm:w-auto"
+                          onClick={() => setShowConfirmSave(true)}
+                          disabled={savingFeedback}
+                        >
+                          Save
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="md"
+                        className="w-full sm:w-auto"
+                        onClick={handleStartEdit}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+
+                  <ConfirmDialog
+                    isOpen={showConfirmSave}
+                    onClose={() => setShowConfirmSave(false)}
+                    onConfirm={async () => {
+                      if (savingFeedback) return
+                      const ok = await handleSaveFeedback()
+                      if (ok) {
+                        setIsEditingFeedback(false)
+                        setShowConfirmSave(false)
+                      }
+                    }}
+                    title="Save Feedback"
+                    message="Are you sure you want to save this feedback?"
+                    confirmText="Yes"
+                    cancelText="Cancel"
+                  />
+                </>
+              ) : (
+                <p className="text-gray-500 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                  {feedbackText || 'No feedback yet'}
+                </p>
+              )}
             </div>
           </section>
-
-          <section className="w-full max-w-[900px] mx-auto mt-10">
-            <div className={[classes.surfaceCard, 'p-6'].join(' ')}>
-              <h3 className="text-xl font-medium text-gray-600">Score Level Details</h3>
-              <div className="my-4 border-t border-gray-300" />
-
-              <div className="overflow-x-auto max-w-sm mx-auto">
-                <table className="w-full border-collapse text-center ">
-                  <thead>
-                    <tr className="bg-white">
-                      <th className="px-3 sm:px-4 py-3 text-gray-600 font-semibold border border-gray-200 whitespace-nowrap">Level</th>
-                      <th className="px-3 sm:px-4 py-3 text-gray-600 font-semibold border border-gray-200 whitespace-nowrap">Score Range</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {levelRows.map((r, idx) => (
-                      <tr key={r.level} className={idx % 2 === 1 ? 'bg-white/60' : 'bg-white'}>
-                        <td className={["px-3 sm:px-4 py-3 border border-gray-200 font-semibold whitespace-nowrap", classes.textSuccess].join(' ')}>{r.level}</td>
-                        <td className="px-3 sm:px-4 py-3 border border-gray-200 text-gray-700 whitespace-nowrap">{r.range}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
           <div className="w-full flex justify-center my-10">
-            <Button variant="primary" size="md" className="w-full sm:w-[196px]" onClick={() => navigate(ROUTES.studentTestRecord, { replace: true, state: { fromResult: true } })}>
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full sm:w-[196px]"
+              onClick={handleClose}
+            >
               CLOSE
             </Button>
           </div>
+
         </div>
       </div>
     </div>

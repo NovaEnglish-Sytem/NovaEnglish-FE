@@ -888,7 +888,7 @@ export const TutorCreateQuestions = () => {
       <div className="w-full max-w-7xl mx-auto">
         <SurfaceCard className="w-full">
           {/* Page Header with Tabs */}
-          <div className="sticky top-0 z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 border-b border-gray-100 px-4 py-3 rounded-t-[12px]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 px-4 py-3 rounded-t-[12px] bg-white">
             <div>
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-700">Create Questions</h1>
               <p className="text-sm text-gray-500">Design and manage your quiz questions for this lesson.</p>
@@ -923,8 +923,9 @@ export const TutorCreateQuestions = () => {
           {activeTab === 'create' && (
             <div className="p-4 space-y-6">
               {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                {/* Back button - hidden on mobile, visible on sm+ */}
+                <div className="hidden sm:flex items-center gap-3">
                   <button
                     type="button"
                     onClick={handleBackClick}
@@ -935,7 +936,7 @@ export const TutorCreateQuestions = () => {
                     <span className="text-sm">Back</span>
                   </button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 justify-end w-full sm:w-auto">
                   <span className={[
                     'inline-flex items-center h-7 px-3 rounded-full border text-xs font-medium',
                     hasUnsavedChanges ? 'bg-yellow-50 text-yellow-800 border-yellow-200' : 'bg-green-50 text-green-800 border-green-200'
@@ -950,11 +951,12 @@ export const TutorCreateQuestions = () => {
                   </span>
                 </div>
               </div>
-              {/* Back button is already in header above; removed duplicate */}
-              {/* Package name and Total Questions in one row */}
-              <div className="flex items-center justify-between gap-3 mt-1 mb-2">
-                <PackageNameBar categoryName={packageCategoryName} code={packageTitle} />
-                <div className="flex justify-end">
+              {/* Package name and Total Questions - stacked on mobile, row on larger screens */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-1 mb-4">
+                <div className="w-full">
+                  <PackageNameBar categoryName={packageCategoryName} code={packageTitle} />
+                </div>
+                <div className="flex justify-start sm:justify-end mt-1 sm:mt-0 w-full sm:w-auto">
                   <span className="inline-flex items-center h-8 px-3 rounded-full bg-gray-100 text-gray-700 text-sm border border-gray-200">
                     Total Questions: {totalQuestions}
                   </span>
@@ -965,10 +967,19 @@ export const TutorCreateQuestions = () => {
               <PageNavigator
                 pages={pages}
                 currentIndex={currentPageIndex}
-                onAddAfter={(_) => {
+                onAddAfter={(idx) => {
                   if (isPublished) { setShowUnpublishGuard(true); return }
-                  setPages(prev => [...prev, { ...defaultInitialPage() }])
+                  const insertAt = (typeof idx === 'number' ? idx + 1 : currentPageIndex + 1)
+                  setPages(prev => {
+                    const next = [...prev]
+                    const safeIndex = Math.min(Math.max(insertAt, 0), next.length)
+                    next.splice(safeIndex, 0, { ...defaultInitialPage() })
+                    return next
+                  })
+                  const targetIndex = (typeof idx === 'number' ? idx + 1 : currentPageIndex + 1)
+                  setCurrentPageIndex(targetIndex)
                   setHasUnsavedChanges(true)
+                  setSaveStatus('saving')
                 }}
                 onDeletePageAt={(i) => handleAskDeletePage(i)}
                 onSelectPage={setCurrentPageIndex}
@@ -1318,13 +1329,6 @@ export const TutorCreateQuestions = () => {
         confirmText="OK"
         cancelText=""
       />
-
-      {/* Autosave status indicator - only render when there is badge text */}
-      {activeTab === 'create' && autosaveBadgeText && (
-        <div className="fixed bottom-4 left-4 z-40 rounded-full bg-white/90 backdrop-blur px-3 py-1 border border-gray-200 shadow-sm text-xs text-gray-600">
-          {autosaveBadgeText}
-        </div>
-      )}
 
       {/* Logout confirmation STEP 1: Unsaved changes warning */}
       <ConfirmDialog

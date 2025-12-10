@@ -22,7 +22,7 @@ export const Terms = () => {
   }
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout showFooter={false} enableStableScrollbar={false}>
       {/* Main container styled to match original dimensions/positions */}
       <div className="min-h-[calc(100vh-100px)] flex items-center justify-center">
         <div className="w-full max-w-5xl bg-white rounded-lg border-2 border-[#f0f0f0] shadow-md p-8">
@@ -57,7 +57,7 @@ export const Terms = () => {
             </div>
           </div>
 
-          <div className="max-h-[576px] overflow-y-auto font-normal text-gray-600 text-base leading-normal space-y-4">
+          <div className="max-h-[576px] overflow-y-auto tutor-scroll font-normal text-gray-600 text-base leading-normal space-y-4">
             {activeLang === 'en' ? (
               <div className="space-y-4">
                 <p><strong>1. Acceptance of Terms.</strong> By creating an account or using the Nova English website and services, you agree to these Terms &amp; Conditions and to our Privacy Policy. If you do not agree, please do not use the platform.</p>

@@ -25,7 +25,9 @@ export const ClassPerformance = ({
 }) => {
   const GREEN = '#76c043'
   const PANEL_BG = '#f8f8f8'
-  const safeData = Array.isArray(data) ? data.map((d) => ({ ...d, score: Number(d.score) || 0 })) : []
+  const safeData = Array.isArray(data)
+    ? data.map((d) => ({ ...d, score: Math.round(Number(d.score) || 0) }))
+    : []
 
   return (
     <section
@@ -58,7 +60,7 @@ export const ClassPerformance = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart panel */}
         <div className="lg:col-span-2 rounded-[20px] p-5 bg-white border border-[#ececec] shadow-[0_6px_10px_#0000001a]">
-          <h3 className="text-center text-gray-600 font-medium mb-2">Student Band Score by Category</h3>
+          <h3 className="text-center text-gray-600 font-medium mb-2">Student Score by Category</h3>
           <div className="h-[280px]">
             {Array.isArray(safeData) && safeData.length ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -84,7 +86,7 @@ export const ClassPerformance = ({
         {/* KPI cards */}
         <div className="flex flex-col gap-4 h-full">
           <div className="flex-1 flex flex-col justify-center rounded-[16px] py-5 bg-[#f3f3f3] border border-[#ececec] shadow-[0_6px_10px_#0000001a]">
-            <div className="text-gray-600 text-center">Average Band Score</div>
+            <div className="text-gray-600 text-center">Average Score</div>
             <div className={['mt-2 text-4xl font-semibold text-center', classes.textSuccess].join(' ')}>{kpis.avgScore}</div>
           </div>
           <div className="flex-1 flex flex-col justify-center rounded-[16px] p-5 bg-[#f3f3f3] border border-[#ececec] shadow-[0_6px_10px_#0000001a]">

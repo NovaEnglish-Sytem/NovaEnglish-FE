@@ -11,7 +11,7 @@ export const AuthLayout = ({
   logoTo = ROUTES.login,
 }) => {
   return (
-    <div className={['bg-neutral-100 w-full overflow-x-auto', className].filter(Boolean).join(' ')}>
+    <div className={['bg-neutral-100 w-full overflow-x-hidden', className].filter(Boolean).join(' ')}>
       {/* Header outside container to allow full-width background */}
       <Header rightSlot={rightHeaderSlot} fullWidthBg={headerFullWidthBg} logoTo={logoTo} />
       <main className="max-w-[1440px] box-border mx-auto min-h-[calc(100vh-100px)] px-6 flex items-center justify-center">

@@ -100,7 +100,7 @@ function App() {
             <Route path={ROUTES.studentTestRecord} element={<StudentRoute><StudentTestRecord /></StudentRoute>} />
             <Route path={ROUTES.studentTestOverview} element={<StudentRoute><StudentTestOverview /></StudentRoute>} />
             <Route path={ROUTES.studentTest} element={<StudentRoute><StudentTestPage /></StudentRoute>} />
-            <Route path={ROUTES.studentResult} element={<StudentRoute><ResultPage /></StudentRoute>} />
+            <Route path={ROUTES.studentResult} element={<ProtectedRoute><ResultPage /></ProtectedRoute>} />
 
             {/* Tutor/Admin Routes */}
             <Route path={ROUTES.tutorDashboard} element={<TutorRoute><TutorDashboard /></TutorRoute>} />

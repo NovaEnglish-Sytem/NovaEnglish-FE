@@ -9,9 +9,28 @@ const ValidationSummary = ({ page, validatePage }) => {
       <div className="text-sm font-medium text-red-700">Validation Errors (Current Page):</div>
       <ul className="list-disc pl-5 text-sm text-red-700 mt-1">
         {res.errors.questions.map((err, idx) => {
-          const keys = Object.keys(err || {})
-          if (keys.length === 0) return null
-          return <li key={idx}>Question {idx + 1}: {keys.join(', ')}</li>
+          const messages = []
+          const e = err || {}
+
+          // MCQ options: show a single concise message if any option error exists
+          if (Array.isArray(e.options) && e.options.some(Boolean)) {
+            messages.push('Fill in all answer options.')
+          }
+
+          // Other string messages (text, correctTFNG, shortTemplate, matchingTemplate, etc.)
+          Object.entries(e).forEach(([key, value]) => {
+            if (key === 'options') return
+            if (typeof value === 'string' && value.trim()) {
+              messages.push(value.trim())
+            }
+          })
+
+          if (!messages.length) return null
+          return (
+            <li key={idx}>
+              Question {idx + 1}: {messages.join(' ')}
+            </li>
+          )
         })}
       </ul>
     </div>

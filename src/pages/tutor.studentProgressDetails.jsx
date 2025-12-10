@@ -235,6 +235,9 @@ export const TutorStudentProgressDetails = () => {
             <TestSectionBlock
               record={mapRecordToBlock(bestRecord)}
               highlight
+              onViewDetails={bestRecord.attemptId
+                ? () => navigate(ROUTES.studentResult.replace(':attemptId', encodeURIComponent(bestRecord.attemptId)))
+                : undefined}
             />
           </div>
         ) : null}
@@ -255,6 +258,9 @@ export const TutorStudentProgressDetails = () => {
                 <TestSectionBlock
                   key={rec.recordId || rec.attemptId}
                   record={mapRecordToBlock(rec)}
+                  onViewDetails={rec.attemptId
+                    ? () => navigate(ROUTES.studentResult.replace(':attemptId', encodeURIComponent(rec.attemptId)))
+                    : undefined}
                 />
               ))}
             </div>

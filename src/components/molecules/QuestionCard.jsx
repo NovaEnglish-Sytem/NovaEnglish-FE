@@ -25,7 +25,7 @@ export default function QuestionCard({
 
   return (
     <div className={['rounded-[12px] border border-[#ececec] shadow-[4px_4px_2px_#0000000d] bg-white', className].filter(Boolean).join(' ')}>
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#f0f0f0]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-b border-[#f0f0f0]">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -48,7 +48,7 @@ export default function QuestionCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mt-2 sm:mt-0 sm:ml-auto">
           <button
             type="button"
             onClick={onMoveUp}

@@ -22,7 +22,7 @@ export const PrivacyPolicy = () => {
   }
 
   return (
-    <AppLayout showFooter={false}>
+    <AppLayout showFooter={false} enableStableScrollbar={false}>
       {/* Main container styled to match original dimensions/positions */}
       <div className="min-h-[calc(100vh-100px)] flex items-center justify-center">
         <div className="w-full max-w-5xl bg-white rounded-lg border-2 border-[#f0f0f0] shadow-md p-8">
@@ -57,7 +57,7 @@ export const PrivacyPolicy = () => {
             </div>
           </div>
 
-          <div className="max-h-[576px] overflow-y-auto font-normal text-gray-600 text-base leading-normal space-y-4">
+          <div className="max-h-[576px] overflow-y-auto tutor-scroll font-normal text-gray-600 text-base leading-normal space-y-4">
             {activeLang === 'en' ? (
               <div className="space-y-4">
                 <p><strong>1. About Nova English.</strong> Nova English ("we", "our", "us") is an online platform that helps students practise English tests, track their progress, and receive feedback. Tutors use the platform to create and manage questions, test packages, and student progress reports. This Privacy Policy explains how we collect, use, and protect your personal data when you use the Nova English website and services.</p>

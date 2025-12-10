@@ -9,7 +9,7 @@
 }
 
 html {
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 html, body {
@@ -20,6 +20,26 @@ html, body {
    to keep a stable vertical scrollbar gutter. */
 .scrollbar-stable {
   overflow-y: scroll;
+}
+
+/* Thin scrollbar styling for tutor/admin/auth content containers */
+.tutor-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+.tutor-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.tutor-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tutor-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 9999px;
 }
 
 /* ================= Custom scrollbar for Image Modal ================= */

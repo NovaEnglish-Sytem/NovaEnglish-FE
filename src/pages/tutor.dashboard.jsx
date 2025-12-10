@@ -131,8 +131,12 @@ export const TutorDashboard = () => {
 
   // Prepare class performance data from backend
   const classPerformanceData = (dashboardData?.classPerformance?.categories || []).map(c => ({ name: c.name, score: c.avgScore }))
+  const rawAvgScore = dashboardData?.classPerformance?.kpis?.avgScore
+  const roundedAvgScore = typeof rawAvgScore === 'number'
+    ? Math.round(rawAvgScore)
+    : (rawAvgScore ?? null)
   const classPerformanceKpis = {
-    avgScore: dashboardData?.classPerformance?.kpis?.avgScore ?? null,
+    avgScore: roundedAvgScore,
     totalStudent: dashboardData?.classPerformance?.kpis?.totalStudents ?? 0
   }
 

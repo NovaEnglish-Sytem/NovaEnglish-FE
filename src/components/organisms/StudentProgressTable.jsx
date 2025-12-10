@@ -72,7 +72,7 @@ export const StudentProgressTable = ({
             <tr className={['border-b border-[#ececec]', classes.textSuccess].join(' ')}>
               <th className="py-3 px-4 font-medium whitespace-nowrap">Fullname</th>
               <th className="py-3 px-4 font-medium whitespace-nowrap">Email</th>
-              <th className="py-3 px-4 font-medium whitespace-nowrap">Band Score</th>
+              <th className="py-3 px-4 font-medium whitespace-nowrap">Best Score</th>
               <th className="py-3 px-4 font-medium whitespace-nowrap">Total Attempts</th>
               <th className="py-3 px-4 font-medium whitespace-nowrap">Last Update</th>
             </tr>

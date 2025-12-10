@@ -126,7 +126,24 @@ export const StudentTestOverview = () => {
       return
     }
 
-    setSections(sectionData)
+    // Sort sections for overview display:
+    // 1) Available & not completed
+    // 2) Completed
+    // 3) Unavailable (packet not found)
+    // Each group sorted ascending by title
+    const sortedSections = [...sectionData].sort((a, b) => {
+      const group = (s) => {
+        if (s.unavailable) return 2
+        if (!s.completed) return 0
+        return 1
+      }
+      const gA = group(a)
+      const gB = group(b)
+      if (gA !== gB) return gA - gB
+      return String(a.title || '').localeCompare(String(b.title || ''))
+    })
+
+    setSections(sortedSections)
     setLoading(false)
     
     return () => { 

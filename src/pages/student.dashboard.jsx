@@ -107,6 +107,9 @@ export const StudentDashboard = () => {
   }, [])
 
   const categoryList = Array.isArray(summary?.categoryList) ? summary.categoryList : []
+  const categoryStats = Array.isArray(summary?.categories) ? summary.categories : []
+  const historyNames = new Set(categoryStats.map(stat => String(stat.name || '')))
+  
   const activeRecord = summary?.activeRecord || null
   const completedCategoryIds = activeRecord?.completedCategories || []
   
@@ -245,6 +248,31 @@ export const StudentDashboard = () => {
   const retakeMode = Boolean(summary?.hasCompletedRecord) || (Number(summary?.recordCount || 0) > 1) || allComplete
   const progressPct = (totalCategories === 0 || allComplete) ? 0 : Math.round((completedCount / totalCategories) * 100)
 
+  // Sort categories for "Take Your Test":
+  // 1) New categories (no history)
+  // 2) Retake categories (have history, not completed in current record)
+  // 3) Completed categories (completed in current record)
+  // Each group sorted ascending by name
+  const orderedCategoryList = [...categoryList].sort((a, b) => {
+    const nameA = String(a.name || '')
+    const nameB = String(b.name || '')
+    const aHasHistory = historyNames.has(nameA)
+    const bHasHistory = historyNames.has(nameB)
+    const aCompleted = !!a.completedInCurrentRecord
+    const bCompleted = !!b.completedInCurrentRecord
+
+    const group = (hasHistory, completed) => {
+      if (!hasHistory) return 0
+      if (!completed) return 1
+      return 2
+    }
+
+    const gA = group(aHasHistory, aCompleted)
+    const gB = group(bHasHistory, bCompleted)
+    if (gA !== gB) return gA - gB
+    return nameA.localeCompare(nameB)
+  })
+
   // Loading state
   if (loading) {
     return (
@@ -348,10 +376,11 @@ export const StudentDashboard = () => {
       {/* Test section */}
       <div className="w-full flex justify-center mt-8 mb-20">
         <StudentTest
-          sections={categoryList.map(s => ({ 
+          sections={orderedCategoryList.map(s => ({ 
             id: s.name, 
             title: s.name,
             completed: s.completedInCurrentRecord || false,
+            hasHistory: historyNames.has(String(s.name || '')),
           }))}
           onStart={(id) => onStartSingle(id)}
           onStartAll={onStartAll}

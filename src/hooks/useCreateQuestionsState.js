@@ -57,8 +57,34 @@ export default function useCreateQuestionsState(initialPages = [defaultInitialPa
 
   const totalQuestions = useMemo(() => {
     let count = 0
-    for (const page of pages) {
-      for (const q of page.questions || []) {
+
+    // If no validatePage is provided, fall back to counting all questions
+    if (!validatePage) {
+      for (const page of pages) {
+        for (const q of page.questions || []) {
+          if (q.type === 'SHORT') {
+            const matches = (q.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
+            count += matches.length > 0 ? matches.length : 1
+          } else if (q.type === 'MATCHING') {
+            const matches = (q.matchingTemplate?.match(/\[([^\]]*)\]/g) || [])
+            count += matches.length > 0 ? matches.length : 1
+          } else {
+            count += 1
+          }
+        }
+      }
+      return count
+    }
+
+    // When validatePage is available, only count questions with no validation errors
+    pages.forEach((page) => {
+      const res = validatePage(page) || { errors: { questions: [] } }
+      const qErrors = Array.isArray(res.errors?.questions) ? res.errors.questions : []
+
+      ;(page.questions || []).forEach((q, idx) => {
+        const err = qErrors[idx] || {}
+        if (Object.keys(err).length > 0) return // skip invalid / incomplete question
+
         if (q.type === 'SHORT') {
           const matches = (q.shortTemplate?.match(/\[([^\]]*)\]/g) || [])
           count += matches.length > 0 ? matches.length : 1
@@ -68,10 +94,11 @@ export default function useCreateQuestionsState(initialPages = [defaultInitialPa
         } else {
           count += 1
         }
-      }
-    }
+      })
+    })
+
     return count
-  }, [pages])
+  }, [pages, validatePage])
 
   const validateAllPages = useCallback(() => {
     if (!validatePage) return { valid: true, errors: [] }

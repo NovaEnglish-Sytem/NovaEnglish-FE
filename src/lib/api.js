@@ -274,6 +274,8 @@ export const studentApi = {
     return api.get(`/api/student/test-records${qs ? `?${qs}` : ''}`)
   },
   result: (attemptId) => api.get(`/api/student/result/${encodeURIComponent(attemptId)}`),
+  updateResultFeedback: (attemptId, feedback) =>
+    api.put(`/api/student/result/${encodeURIComponent(attemptId)}`, { feedback }),
   checkActiveSession: () => api.get('/api/student/active-session'),
 }
 

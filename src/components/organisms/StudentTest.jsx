@@ -25,8 +25,9 @@ export const StudentTest = ({
   const isScrollable = Array.isArray(sections) && sections.length > 3
 
   const hasSections = Array.isArray(sections) && sections.length > 0
-
-  const isRetakeAll = retakeMode
+  const isRetakeContext = retakeMode || allComplete
+  const hasNewCategory = Array.isArray(sections) && sections.some(sec => sec.hasHistory === false)
+  const showRetakeAll = isRetakeContext && !hasNewCategory
 
   return (
     <section
@@ -100,14 +101,19 @@ export const StudentTest = ({
                         <span className="text-sm font-semibold">Completed</span>
                       </div>
                     ) : (
-                      <Button 
-                        size="sm" 
-                        variant={(isRetakeAll || allComplete) ? 'outline' : 'primary'}
-                        onClick={() => (sec.onStart ? sec.onStart(sec.id) : onStart(sec.id))} 
-                        className='w-[120px]'
-                      >
-                        {(isRetakeAll || allComplete) ? 'Retake' : 'Start'}
-                      </Button>
+                      (() => {
+                        const showRetake = isRetakeContext && !!sec.hasHistory
+                        return (
+                          <Button 
+                            size="sm" 
+                            variant={showRetake ? 'outline' : 'primary'}
+                            onClick={() => (sec.onStart ? sec.onStart(sec.id) : onStart(sec.id))} 
+                            className='w-[120px]'
+                          >
+                            {showRetake ? 'Retake' : 'Start'}
+                          </Button>
+                        )
+                      })()
                     )}
                   </div>
                 </div>
@@ -154,10 +160,10 @@ export const StudentTest = ({
               <div className="flex items-center">
                 <Button 
                   size="md" 
-                  variant={(isRetakeAll || allComplete) ? 'outline' : 'primary'}
+                  variant={showRetakeAll ? 'outline' : 'primary'}
                   onClick={onStartAll}
                 >
-                  {(isRetakeAll || allComplete) ? 'Retake All' : 'Start All'}
+                  {showRetakeAll ? 'Retake All' : 'Start All'}
                 </Button>
               </div>
             </div>

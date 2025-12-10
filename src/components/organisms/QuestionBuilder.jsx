@@ -13,17 +13,17 @@ import { parseShortAnswers, generateUniqueId, calculateQuestionNumber, getQuesti
 export const validateQuestion = (q) => {
   const errs = {}
   if (q.type === 'MCQ') {
-    if (!q.text || !q.text.trim()) errs.text = 'Please enter the question text'
+    if (!q.text || !q.text.trim()) errs.text = 'Enter the question text.'
     const opts = q.options || []
     const optErrs = [0,1,2,3].map((i) => {
       const v = (opts[i] ?? '').trim()
-      return v ? null : 'Required'
+      return v ? null : 'Fill in all answer options.'
     })
     if (optErrs.some(Boolean)) errs.options = optErrs
-    if (q.correctIndex === null || q.correctIndex === undefined) errs.correctIndex = 'Please select the correct answer'
+    if (q.correctIndex === null || q.correctIndex === undefined) errs.correctIndex = 'Select one option as the correct answer.'
   } else if (q.type === 'TFNG') {
-    if (!q.text || !q.text.trim()) errs.text = 'Please enter the question text'
-    if (!q.correctTFNG) errs.correctTFNG = 'Please select the correct answer'
+    if (!q.text || !q.text.trim()) errs.text = 'Enter the question text.'
+    if (!q.correctTFNG) errs.correctTFNG = 'Select True, False, or Not Given.'
   } else if (q.type === 'SHORT') {
     const tpl = q.shortTemplate || ''
     const answers = parseShortAnswers(tpl)
@@ -31,11 +31,11 @@ export const validateQuestion = (q) => {
     const hasEmptyBrackets = /\[\s*\]/.test(tpl)
     
     if (!tpl.trim()) {
-      errs.shortTemplate = 'Please enter the text with [answers]'
+      errs.shortTemplate = 'Enter the text with at least one answer in [brackets].'
     } else if (hasEmptyBrackets) {
-      errs.shortTemplate = 'Empty brackets [] detected. Please add answers inside the brackets, e.g., [answer]'
+      errs.shortTemplate = 'Do not leave empty brackets []. Put the answer inside, e.g. [answer].'
     } else if (answers.length === 0) {
-      errs.shortTemplate = 'Please include at least one [answer] using square brackets'
+      errs.shortTemplate = 'Add at least one answer using [brackets].'
     }
   } else if (q.type === 'MATCHING') {
     const tpl = q.matchingTemplate || ''
@@ -43,11 +43,11 @@ export const validateQuestion = (q) => {
     const hasAnyBracket = /\[[^\]]+\]/.test(tpl)
 
     if (!tpl.trim()) {
-      errs.matchingTemplate = 'Please enter the text with [answers]'
+      errs.matchingTemplate = 'Enter the text with at least one matching answer in [brackets].'
     } else if (hasEmptyBrackets) {
-      errs.matchingTemplate = 'Empty brackets [] detected. Please add answers inside the brackets, e.g., [answer]'
+      errs.matchingTemplate = 'Do not leave empty brackets []. Put the matching answer inside, e.g. [entertainment].'
     } else if (!hasAnyBracket) {
-      errs.matchingTemplate = 'Please include at least one [answer] using square brackets'
+      errs.matchingTemplate = 'Add at least one matching answer using [brackets].'
     }
   }
   return errs
@@ -202,6 +202,37 @@ export default function QuestionBuilder({
     })
   }
 
+  const canAddMore = !p.multiple && (p.questions?.length || 0) >= 1
+
+  const addControls = (
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+      <select
+        value={newType}
+        onChange={(e) => setNewType(e.target.value)}
+        className="h-10 px-3 rounded-[5px] border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#007a33] w-full sm:w-auto min-w-[200px]"
+        aria-label="Select Question Type"
+      >
+        <option value="MCQ">Multiple Choice</option>
+        <option value="TFNG">True / False / Not Given</option>
+        <option value="SHORT">Short Answer</option>
+        <option value="MATCHING">Matching Dropdown</option>
+      </select>
+      <button
+        type="button"
+        disabled={canAddMore}
+        onClick={() => addQuestionOfType(newType)}
+        className={[
+          classes.button.base,
+          classes.button.outline,
+          'h-10 px-3 whitespace-nowrap',
+          canAddMore ? 'opacity-50 cursor-not-allowed' : ''
+        ].join(' ')}
+      >
+        + Add Question
+      </button>
+    </div>
+  )
+
   return (
     <div className={['w-full', className].filter(Boolean).join(' ')}>
       {/* Grouping Control */}
@@ -212,31 +243,6 @@ export default function QuestionBuilder({
           onChange={(e) => setPage({ multiple: e.target.checked })}
           label="This page contains multiple questions"
         />
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          <select
-            value={newType}
-            onChange={(e) => setNewType(e.target.value)}
-            className="h-10 px-3 rounded-[5px] border border-gray-300 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#007a33] w-full sm:w-auto min-w-[200px]"
-            aria-label="Select Question Type"
-          >
-            <option value="MCQ">Multiple Choice</option>
-            <option value="TFNG">True / False / Not Given</option>
-            <option value="SHORT">Short Answer</option>
-            <option value="MATCHING">Matching Dropdown</option>
-          </select>
-          <button
-            type="button"
-            disabled={!p.multiple && (p.questions?.length || 0) >= 1}
-            onClick={() => addQuestionOfType(newType)}
-            className={[
-              classes.button.base,
-              classes.button.outline,
-              'h-10 px-3 whitespace-nowrap',
-              (!p.multiple && (p.questions?.length || 0) >= 1) ? 'opacity-50 cursor-not-allowed' : ''
-            ].join(' ')}
-          >
-            + Add Question
-          </button>
       </div>
 
       <ConfirmDialog
@@ -255,7 +261,6 @@ export default function QuestionBuilder({
         confirmText="Delete"
         cancelText="Cancel"
       />
-    </div>
 
       {/* Question Blocks */}
       <div ref={listRef} className="mt-4 space-y-4">
@@ -335,6 +340,11 @@ export default function QuestionBuilder({
           </QuestionCard>
           )
         })}
+      </div>
+
+      {/* Add Question Controls at bottom */}
+      <div className="mt-4 flex flex-col sm:flex-row sm:justify-end">
+        {addControls}
       </div>
     </div>
   )

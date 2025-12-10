@@ -3,20 +3,18 @@ import { classes } from '../../config/theme/tokens.js'
 import { ROUTES } from '../../config/routes.js'
 import { VscCopy } from 'react-icons/vsc';
 import banner from '../../assets/Banner/banner-colorfull.svg'
-import facebook from '../../assets/Social Media/facebook.svg'
 import instagram from '../../assets/Social Media/instagram.svg'
-import tiktok from '../../assets/Social Media/tiktok.svg'
 import whatsapp from '../../assets/Social Media/whatsapp.svg'
 import gmail from '../../assets/Social Media/gmail.svg'
 import { ConfirmDialog } from '../molecules/ConfirmDialog.jsx'
 
+// Facebook and TikTok icons are in ../../assets/Social Media/ (if needed, just take them)
+
 export const Footer = ({
   information = ['Privacy Policy', 'Terms &amp; Conditions'],
-  contact = { email: 'dikhaarianda@gmail.com', phone: '081219540704' },
+  contact = { email: 'dikhaarianda@gmail.com', phone: '081226398774' },
   social = [
-    {name: 'instagram', icon:instagram, href:'https://www.instagram.com/withnovaenglish?igsh=OXdtYTVnOWE1dHhx', alt:'instagram'},
-    {name: 'tiktok', icon:tiktok, href:'#', alt:'tiktok'},
-    {name: 'facebook', icon:facebook, href:'#', alt:'facebook'}
+    {name: 'instagram', icon: instagram, href:'https://www.instagram.com/withnovaenglish?igsh=OXdtYTVnOWE1dHhx', alt:'instagram'},
   ],
   className = '',
   gmailSubject = 'Question for Nova English',
@@ -124,9 +122,9 @@ export const Footer = ({
   return (
     <footer className={['w-full text-black', wrapperBgClass, className].filter(Boolean).join(' ')} role="contentinfo">
       <div className={['max-w-[1440px] mx-auto lg:px-6 py-8 sm:py-10', containerBgClass].filter(Boolean).join(' ')}>
-        <div className="flex flex-col items-center lg:flex-row lg:items-start lg:justify-center">
+        <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           {/* Logo + tagline */}
-          <div className="order-2 lg:order-1 flex flex-col items-center lg:items-start gap-2 p-3">
+          <div className="order-2 lg:order-1 flex flex-col items-center lg:items-start gap-2 px-3 py-2">
             <img
             className="h-9 sm:h-14 md:h-[60px] w-auto object-contain"
             alt="Nova English Logo"
@@ -134,16 +132,16 @@ export const Footer = ({
             />
           </div>
 
-          <div className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-3 gap-x-10 lg:gap-x-25 gap-y-6 items-start w-full lg:w-auto lg:ml-auto">
+          <div className="order-1 lg:order-2 grid grid-cols-1 sm:grid-cols-3 gap-x-8 lg:gap-x-12 gap-y-6 items-start w-full lg:w-auto lg:ml-auto">
             {/* Information */}
-            <nav aria-label="Information" className='flex flex-col items-center text-center p-5'>
-              <h3 className="text-lg font-semibold mb-4">Information</h3>
+            <nav aria-label="Information" className='flex flex-col items-center text-center px-4 py-3'>
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Information</h3>
               <ul className="space-y-3">
                 {infoItems.map((item, idx) => (
                 <li key={idx}>
                   <a
                   href={item.href}
-                  className={['text-sm', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
+                  className={['text-xs sm:text-sm', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
                   dangerouslySetInnerHTML={{ __html: item.label }}
                   />
                 </li>
@@ -152,8 +150,8 @@ export const Footer = ({
             </nav>
 
             {/* Contact Us */}
-            <div id="footer-contact" className="flex flex-col border-2 border-transparent rounded-[10px] p-5 transition-[border-color] duration-300">
-              <h3 className="text-lg font-semibold mb-4 text-center">Contact Us</h3>
+            <div id="footer-contact" className="flex flex-col border-2 border-transparent rounded-[10px] px-4 py-3 transition-[border-color] duration-300">
+              <h3 className="text-base sm:text-lg font-semibold mb-4 text-center">Contact Us</h3>
               <ul className="space-y-3 text-center lg:text-left">
                 <li className='flex items-center gap-2 justify-center lg:justify-start'>
                   <a
@@ -161,9 +159,9 @@ export const Footer = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => onExternalClick(e, buildGmailCompose(contact.email, gmailSubject), 'your email (Gmail)')}>
-                    <div className={['inline-flex items-center gap-3 min-w-0 overflow-x-auto', classes.linkHoverSuccess, 'transition-colors'].join(' ')}>
+                    <div className={['inline-flex items-center gap-3 min-w-0 overflow-x-auto sm:overflow-visible', classes.linkHoverSuccess, 'transition-colors'].join(' ')}>
                       <img src={gmail} alt="email" className="w-5 h-5 object-contain" />
-                      <span className="text-sm">{contact.email}</span>
+                      <span className="text-xs sm:text-sm">{contact.email}</span>
                     </div>
                   </a>
                   <button
@@ -183,7 +181,7 @@ export const Footer = ({
                   onClick={(e) => onExternalClick(e, buildWhatsApp(contact.phone, whatsappMessage), 'WhatsApp')}
                   >
                     <img src={whatsapp} alt="phone" className="w-5 h-5 object-contain" />
-                    <span className="text-sm">{contact.phone}</span>
+                    <span className="text-xs sm:text-sm">{contact.phone}</span>
                   </a>
                   <button
                     className={['p-1 rounded hover:bg-gray-200', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
@@ -197,9 +195,9 @@ export const Footer = ({
             </div>
 
             {/* Social Media */}
-            <div className="flex flex-col items-center p-5">
-              <h3 className="text-lg font-semibold mb-4">Social Media</h3>
-              <div className="flex items-center justify-center gap-6 sm:gap-8 md:gap-12">
+            <div className="flex flex-col items-center px-4 py-3">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Social Media</h3>
+              <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
               {social.map(({ name, icon, href = '#', alt }, idx) => (
                 <a
                   key={name + idx}
@@ -217,7 +215,7 @@ export const Footer = ({
       </div>
 
         {/* Copyright */}
-        <div className="mt-10 border-t border-black/10 pt-4 text-center">
+        <div className="mt-8 border-t border-black/10 pt-4 text-center">
           <p className="text-sm">
             © 2025 Nova English. All rights reserved. <br/>
             <span className="text-gray-500 ml-2"> v1.00</span>

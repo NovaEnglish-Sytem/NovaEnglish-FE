@@ -57,8 +57,7 @@ export default function TFNGEditor({
         className="min-h-0"
       />
 
-      <fieldset className="mt-3">
-        <legend className="sr-only">Correct Answer</legend>
+      <div className="mt-3" role="radiogroup" aria-label="Correct Answer">
         <div className="flex flex-col sm:flex-row gap-3">
           {[
             { key: 'T', label: 'True' },
@@ -83,7 +82,7 @@ export default function TFNGEditor({
             {errors?.correctTFNG || 'Please select the correct answer'}
           </p>
         )}
-      </fieldset>
+      </div>
 
       <div className="mt-4 border border-gray-200 rounded-md">
         <div className="flex items-center justify-between px-3 py-2">
