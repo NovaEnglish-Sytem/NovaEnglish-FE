@@ -12,7 +12,7 @@ import { ConfirmDialog } from '../molecules/ConfirmDialog.jsx'
 
 export const Footer = ({
   information = ['Privacy Policy', 'Terms &amp; Conditions'],
-  contact = { email: 'dikhaarianda@gmail.com', phone: '081226398774' },
+  contact = { email: 'dismasreynara1998@gmail.com', phone: '081226398774' },
   social = [
     {name: 'instagram', icon: instagram, href:'https://www.instagram.com/withnovaenglish?igsh=OXdtYTVnOWE1dHhx', alt:'instagram'},
   ],
@@ -119,6 +119,15 @@ export const Footer = ({
   const wrapperBgClass = responsiveContainerBg ? 'bg-[#e5e5e5] lg:bg-transparent' : 'bg-[#e5e5e5]'
   const containerBgClass = responsiveContainerBg ? 'lg:bg-[#e5e5e5]' : ''
 
+  // Dashboard (admin/tutor) uses responsiveContainerBg=true, student pages use false.
+  // Use this to tune spacing differently for email vs WhatsApp rows.
+  // On dashboard: smaller gap on mobile, wider on desktop; on student: very tight.
+  const emailRowGapClass = responsiveContainerBg ? 'gap-2 lg:gap-4' : 'gap-1'
+  const phoneRowGapClass = responsiveContainerBg ? 'gap-1 lg:gap-3' : 'gap-1'
+  // For student (app layout) we don't add extra margin, for tutor/admin we push the
+  // icon slightly further from the text so it doesn't look menempel, with extra on lg.
+  const copyMarginClass = responsiveContainerBg ? 'ml-2 lg:ml-3' : ''
+
   return (
     <footer className={['w-full text-black', wrapperBgClass, className].filter(Boolean).join(' ')} role="contentinfo">
       <div className={['max-w-[1440px] mx-auto lg:px-6 py-8 sm:py-10', containerBgClass].filter(Boolean).join(' ')}>
@@ -153,7 +162,7 @@ export const Footer = ({
             <div id="footer-contact" className="flex flex-col border-2 border-transparent rounded-[10px] px-4 py-3 transition-[border-color] duration-300">
               <h3 className="text-base sm:text-lg font-semibold mb-4 text-center">Contact Us</h3>
               <ul className="space-y-3 text-center lg:text-left">
-                <li className='flex items-center gap-2 justify-center lg:justify-start'>
+                <li className={['flex items-center justify-center lg:justify-start', emailRowGapClass].join(' ')}>
                   <a
                   href={buildGmailCompose(contact.email, gmailSubject)}
                   target="_blank"
@@ -165,14 +174,14 @@ export const Footer = ({
                     </div>
                   </a>
                   <button
-                    className={['p-1 rounded hover:bg-gray-200', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
+                    className={['p-1 rounded hover:bg-gray-200', copyMarginClass, classes.linkHoverSuccess, 'transition-colors'].join(' ')}
                     onClick={() => copyToClipboard(contact.email, 'Email')}
                     title="Copy email address"
                     >
                     <VscCopy className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </li>
-                <li className='flex items-center gap-2 justify-center lg:justify-start'>
+                <li className={['flex items-center justify-center lg:justify-start', phoneRowGapClass].join(' ')}>
                   <a
                   href={buildWhatsApp(contact.phone, whatsappMessage)}
                   target="_blank"
@@ -184,7 +193,7 @@ export const Footer = ({
                     <span className="text-xs sm:text-sm">{contact.phone}</span>
                   </a>
                   <button
-                    className={['p-1 rounded hover:bg-gray-200', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
+                    className={['p-1 rounded hover:bg-gray-200 ml-1', classes.linkHoverSuccess, 'transition-colors'].join(' ')}
                     onClick={() => copyToClipboard(contact.phone, 'Phone number')}
                     title="Copy phone number"
                     >

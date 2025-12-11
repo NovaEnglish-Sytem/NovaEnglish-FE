@@ -366,10 +366,9 @@ export const StudentDashboard = () => {
       {/* Report section */}
       <div className="w-full flex justify-center mt-8">
         <StudentReport
-          bestScore={Number(summary?.overallBest) || 0}
+          overallScore={Number(summary?.overallBest) || 0}
+          bestScore={typeof summary?.bestScore === 'number' ? summary.bestScore : null}
           maxScore={100}
-          bandLevel={summary?.bestBand || '-'}
-          bandDesc={''}
         />
       </div>
 

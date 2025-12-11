@@ -62,16 +62,21 @@ export default function TestOverviewPanel({
     return () => clearInterval(id)
   }, [pauseCountdown])
 
-  const isScrollableDesktop = normalized.length > 3
+  const isScrollable = normalized.length > 3
 
   return (
-    <div className={['w-full', classes.surfaceCard, 'max-w-[640px] p-6 md:p-8 overflow-x-auto', className].filter(Boolean).join(' ')}>
+    <div className={['w-full', classes.surfaceCard, 'max-w-[640px] p-6 md:p-8', className].filter(Boolean).join(' ')}>
       <h2 className="text-center text-2xl font-semibold text-gray-700">Test Overview</h2>
 
       {/* Categories */}
       <div className="mt-6">
         {/* Mobile/Tablet: center all */}
-        <div className="md:hidden grid grid-cols-1 place-items-center gap-3">
+        <div
+          className={[
+            'md:hidden grid grid-cols-1 place-items-center gap-3',
+            isScrollable ? 'max-h-[320px] overflow-y-auto tutor-scroll scroll-smooth' : '',
+          ].filter(Boolean).join(' ')}
+        >
           {normalized.map((s, idx) => (
             <TestCategoryCard 
               key={idx} 
@@ -86,9 +91,9 @@ export default function TestOverviewPanel({
         </div>
 
         {/* Desktop: overflow-x if > 3, else centered row */}
-        <div className={isScrollableDesktop ? 'hidden md:flex md:flex-row md:flex-nowrap md:gap-4 md:overflow-x-auto md:pb-2' : 'hidden md:flex md:justify-center md:gap-6'}>
+        <div className={isScrollable ? 'hidden md:flex md:flex-row md:flex-nowrap md:gap-4 md:overflow-x-auto md:pb-2 md:pr-1 tutor-scroll scroll-smooth' : 'hidden md:flex md:justify-center md:gap-6'}>
           {normalized.map((s, idx) => (
-            <div key={idx} className={isScrollableDesktop ? 'md:min-w-[180px]' : ''}>
+            <div key={idx} className={isScrollable ? 'md:min-w-[180px]' : ''}>
               <TestCategoryCard 
                 title={s.title} 
                 questions={s.questions} 

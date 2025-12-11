@@ -327,7 +327,13 @@ export const StudentTestOverview = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#003900] flex items-center justify-center p-4 relative">
+    <div className="min-h-screen w-full bg-[#003900] flex flex-col items-center justify-center p-4 relative">
+      <div className="md:hidden mb-6 flex justify-center">
+        <div className="bg-[#f4f9f3] rounded-2xl border border-[#d9e7d6] shadow-[4px_4px_2px_#0000000d] p-3 pr-4">
+          <img src="/favicon.svg" alt="Logo" className="w-14 h-14" />
+        </div>
+      </div>
+
       <div className="hidden md:block absolute top-10 left-10">
         <div className="bg-[#f4f9f3] rounded-2xl border border-[#d9e7d6] shadow-[4px_4px_2px_#0000000d] p-3 pr-4">
           <img src="/favicon.svg" alt="Logo" className="w-14 h-14" />

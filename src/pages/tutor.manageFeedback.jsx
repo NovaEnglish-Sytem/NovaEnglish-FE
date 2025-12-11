@@ -12,6 +12,7 @@ import ErrorState from '../components/organisms/ErrorState.jsx'
 import EmptyState from '../components/organisms/EmptyState.jsx'
 import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import TestSectionBlock from '../components/organisms/TestSectionBlock.jsx'
+import Pagination from '../components/molecules/Pagination.jsx'
 
 export const ManageFeedback = () => {
   const navigate = useNavigate()
@@ -77,6 +78,24 @@ export const ManageFeedback = () => {
     fetchRecords()
     return () => { abort = true }
   }, [page, pageSize, debouncedQ])
+
+  const scrollToTop = () => {
+    try {
+      const container = document.querySelector('[data-dashboard-scroll="true"]')
+      if (container && typeof container.scrollTo === 'function') {
+        container.scrollTo({ top: 0 })
+      } else {
+        window.scrollTo({ top: 0 })
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  const goToPage = (nextPage) => {
+    scrollToTop()
+    setPage(nextPage)
+  }
 
   const formatDateLong = (d) => {
     if (!d) return 'N/A'
@@ -163,7 +182,7 @@ export const ManageFeedback = () => {
               <span className="text-gray-600">Search</span>
               <input
                 value={q}
-                onChange={(e) => { setQ(e.target.value); setPage(1) }}
+                onChange={(e) => { setQ(e.target.value); goToPage(1) }}
                 placeholder="Type student name or email"
                 className="h-[30px] w-full sm:w-[220px] flex-1 min-w-0 rounded-[3px] border border-gray-500 px-2 text-sm text-gray-600 bg-white focus:outline-none ml-2"
                 aria-label="Search student"
@@ -240,46 +259,13 @@ export const ManageFeedback = () => {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Page {page} of {totalPages} • Total {total} Records
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-              >
-                Prev
-              </button>
-              {Array.from({ length: totalPages || 1 }).slice(0, 7).map((_, i) => {
-                const p = i + 1
-                const isActive = p === page
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPage(p)}
-                    className={[
-                      'px-3 py-1 rounded border border-[#ececec]',
-                      isActive ? 'bg-[#e6f5e9] text-[#007a33] font-semibold' : '',
-                    ].join(' ')}
-                  >
-                    {p}
-                  </button>
-                )
-              })}
-              <button
-                type="button"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            label={`Page ${page} of ${totalPages} • Total ${total} Records`}
+            onPageChange={goToPage}
+            className="mt-6"
+          />
         </div>
       </div>
     </DashboardLayout>

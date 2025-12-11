@@ -14,6 +14,7 @@ import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import { Spinner } from '../components/atoms/Spinner.jsx'
+import Pagination from '../components/molecules/Pagination.jsx'
 
 export const TutorStudentProgressDetails = () => {
   const navigate = useNavigate()
@@ -111,6 +112,24 @@ export const TutorStudentProgressDetails = () => {
     fetchRecords()
     return () => { abort = true }
   }, [studentId, page, pageSize])
+
+  const scrollToTop = () => {
+    try {
+      const container = document.querySelector('[data-dashboard-scroll="true"]')
+      if (container && typeof container.scrollTo === 'function') {
+        container.scrollTo({ top: 0 })
+      } else {
+        window.scrollTo({ top: 0 })
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  const goToPage = (nextPage) => {
+    scrollToTop()
+    setPage(nextPage)
+  }
 
   // Hydration flag: block UI until summary and first page records are loaded
   useEffect(() => {
@@ -268,46 +287,13 @@ export const TutorStudentProgressDetails = () => {
         </div>
 
         {/* Pagination for Test Records */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Page {page} of {totalPages} • Total {total} Records
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-            >
-              Prev
-            </button>
-            {Array.from({ length: totalPages || 1 }).slice(0, 7).map((_, i) => {
-              const p = i + 1
-              const isActive = p === page
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPage(p)}
-                  className={[
-                    'px-3 py-1 rounded border border-[#ececec]',
-                    isActive ? 'bg-[#e6f5e9] text-[#007a33] font-semibold' : ''
-                  ].join(' ')}
-                >
-                  {p}
-                </button>
-              )
-            })}
-            <button
-              type="button"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          label={`Page ${page} of ${totalPages} • Total ${total} Records`}
+          onPageChange={goToPage}
+          className="mt-6"
+        />
       </SurfaceCard>
     </DashboardLayout>
   )

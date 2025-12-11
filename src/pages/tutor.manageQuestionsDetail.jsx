@@ -312,7 +312,7 @@ export const TutorManageQuestionsDetail = () => {
         message="You already have a package with 0 questions and 0 duration. Please add questions or set a duration before creating a new package."
         type="info"
         confirmText="OK"
-        cancelText="Close"
+        cancelText=""
       />
 
       {/* Published packages warning modal */}

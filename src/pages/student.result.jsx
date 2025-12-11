@@ -221,23 +221,23 @@ export const ResultPage = () => {
                   .slice()
                   .sort((a, b) => String(a?.categoryName || '').localeCompare(String(b?.categoryName || ''), undefined, { sensitivity: 'base' }))
                   .map((a) => {
-                  const val = Math.round(Number(a?.totalScore) || 0)
-                  return (
-                    <div key={a.id} className="grid grid-cols-[1fr_auto] items-center gap-4">
-                      <div>
-                        <div className="text-gray-500 text-base">{a.categoryName || 'Category'}</div>
-                        <div className="mt-2 h-[5px] bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-[#76c043] rounded-full"
-                            style={{ width: fillPct(val) }}
-                            aria-label={`${a.categoryName || 'Category'} progress`}
-                          />
+                    const val = Math.round(Number(a?.totalScore) || 0)
+                    return (
+                      <div key={a.id} className="grid grid-cols-[1fr_auto] items-center gap-4">
+                        <div>
+                          <div className="text-gray-500 text-base">{a.categoryName || 'Category'}</div>
+                          <div className="mt-2 h-[5px] bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#76c043] rounded-full"
+                              style={{ width: fillPct(val) }}
+                              aria-label={`${a.categoryName || 'Category'} progress`}
+                            />
+                          </div>
                         </div>
+                        <div className={[classes.textSuccess, 'text-base min-w-[36px] text-right'].join(' ')}>{val}</div>
                       </div>
-                      <div className={[classes.textSuccess, 'text-base min-w-[36px] text-right'].join(' ')}>{val}</div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
               </div>
 
               <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
@@ -276,13 +276,13 @@ export const ResultPage = () => {
                   {saveSuccess && !saveError && (
                     <p className="mt-2 text-sm text-green-600">Feedback saved.</p>
                   )}
-                  <div className="mt-4 flex justify-end gap-3">
+                  <div className="mt-4 flex flex-col sm:flex-row sm:justify-end gap-3 w-full">
                     {isEditingFeedback ? (
                       <>
                         <Button
                           variant="outline"
-                          size="md"
-                          className="w-full sm:w-auto"
+                          size="sm"
+                          className="w-full sm:w-auto sm:min-w-[90px]"
                           onClick={handleCancelEdit}
                           disabled={savingFeedback}
                         >
@@ -290,8 +290,8 @@ export const ResultPage = () => {
                         </Button>
                         <Button
                           variant="primary"
-                          size="md"
-                          className="w-full sm:w-auto"
+                          size="sm"
+                          className="w-full sm:w-auto sm:min-w-[90px]"
                           onClick={() => setShowConfirmSave(true)}
                           disabled={savingFeedback}
                         >
@@ -301,8 +301,8 @@ export const ResultPage = () => {
                     ) : (
                       <Button
                         variant="primary"
-                        size="md"
-                        className="w-full sm:w-auto"
+                        size="sm"
+                        className="w-full sm:w-auto sm:min-w-[90px]"
                         onClick={handleStartEdit}
                       >
                         Edit
@@ -334,9 +334,10 @@ export const ResultPage = () => {
               )}
             </div>
           </section>
+
           <div className="w-full flex justify-center my-10">
             <Button
-              variant="primary"
+              variant="outline"
               size="md"
               className="w-full sm:w-[196px]"
               onClick={handleClose}
@@ -344,7 +345,6 @@ export const ResultPage = () => {
               CLOSE
             </Button>
           </div>
-
         </div>
       </div>
     </div>

@@ -10,10 +10,9 @@ import {
 } from 'recharts'
 
 export const StudentReport = ({
-  bestScore = 175,
-  maxScore = 200,
-  bandLevel = 'A1',
-  bandDesc = 'Beginner',
+  overallScore = 0,
+  maxScore = 100,
+  bestScore = null,
   className = '',
   variant = 'card',
 }) => {
@@ -23,10 +22,15 @@ export const StudentReport = ({
   const GREEN_DARK = '#2e7d20'
   const GREY = '#E6E6E6'
 
+  const cappedOverall = Math.max(0, Math.min(overallScore, maxScore))
   const pieData = [
-    { name: 'Score', value: Math.max(0, Math.min(bestScore, maxScore)) },
-    { name: 'Remainder', value: Math.max(0, maxScore - Math.max(0, Math.min(bestScore, maxScore))) },
+    { name: 'Score', value: cappedOverall },
+    { name: 'Remainder', value: Math.max(0, maxScore - cappedOverall) },
   ]
+
+  const bestNumeric = (typeof bestScore === 'number' && Number.isFinite(bestScore))
+    ? Math.round(bestScore)
+    : null
 
   // Build the cards grid once
   const summaryGrid = (
@@ -70,13 +74,12 @@ export const StudentReport = ({
         </div>
       </article>
 
-      {/* Best Band Score */}
+      {/* Best Score */}
       <article className={[classes.whiteCard, 'p-4 flex items-start justify-center'].join(' ')}>
         <div className="text-center">
-          <h3 className="text-xl font-medium text-gray-600 underline mb-15">Best Band Score</h3>
-          <div className="text-[80px] leading-none font-medium text-gray-500">{bandLevel}</div>
-          <div className="mt-4 text-2xl font-medium" style={{ color: GREEN }}>
-            {bandDesc}
+          <h3 className="text-xl font-medium text-gray-600 underline mb-15">Best Score</h3>
+          <div className="text-[80px] leading-none font-medium text-gray-500">
+            {bestNumeric != null ? bestNumeric : '-'}
           </div>
         </div>
       </article>

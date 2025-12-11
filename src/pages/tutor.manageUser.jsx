@@ -18,6 +18,7 @@ import { TbArrowsSort, TbArrowUp, TbArrowDown } from 'react-icons/tb'
 import LoadingState from '../components/organisms/LoadingState.jsx'
 import ErrorState from '../components/organisms/ErrorState.jsx'
 import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
+import Pagination from '../components/molecules/Pagination.jsx'
 
 const ManageUsers = () => {
   const navigate = useNavigate()
@@ -34,6 +35,25 @@ const ManageUsers = () => {
   const [page, setPage] = useState(1)
   const [pageSize, _setPageSize] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+
+  const scrollToTop = () => {
+    try {
+      const container = document.querySelector('[data-dashboard-scroll="true"]')
+      if (container && typeof container.scrollTo === 'function') {
+        container.scrollTo({ top: 0 })
+      } else {
+        window.scrollTo({ top: 0 })
+      }
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  const goToPage = (nextPage) => {
+    scrollToTop()
+    setPage(nextPage)
+  }
 
   // Global feedback modal
   const [showMsg, setShowMsg] = useState(false)
@@ -154,18 +174,18 @@ const ManageUsers = () => {
 
   const loadUsers = async () => {
     try {
-      const wantClientFilter = !!debouncedQ
-      const res = await usersApi.list({ page: wantClientFilter ? 1 : page, size: wantClientFilter ? 1000 : pageSize, q: debouncedQ })
+      const res = await usersApi.list({ page, size: pageSize, q: debouncedQ })
       const data = res?.data || {}
       const list = Array.isArray(data.users) ? data.users : []
       setUsers(list)
-      if (!wantClientFilter && typeof data.totalPages === 'number') {
+
+      const totalCount = typeof data.total === 'number' ? data.total : list.length
+      setTotal(totalCount)
+
+      if (typeof data.totalPages === 'number') {
         setTotalPages(Math.max(1, data.totalPages))
-      } else if (!wantClientFilter && typeof data.total === 'number') {
-        setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)))
       } else {
-        // Fallback: derive from length if backend doesn't paginate
-        setTotalPages(Math.max(1, Math.ceil(list.length / pageSize)))
+        setTotalPages(Math.max(1, Math.ceil(totalCount / pageSize)))
       }
     } catch {
       setMsg({ type: 'error', title: 'Error', message: 'Failed to load users. Please try again.' })
@@ -191,24 +211,18 @@ const ManageUsers = () => {
     return users.filter((u) => [u.fullName, u.email].join(' ').toLowerCase().includes(query))
   }, [users, debouncedQ, query])
 
-  // When searching, compute total pages based on filtered results and slice for current page
-  useEffect(() => {
-    if (debouncedQ) {
-      setTotalPages(Math.max(1, Math.ceil(filteredUsers.length / pageSize)))
-      if (page > Math.ceil(filteredUsers.length / pageSize)) setPage(1)
-    }
-  }, [debouncedQ, filteredUsers.length, pageSize])
-
-  const pagedUsers = useMemo(() => {
-    if (!filteredUsers || filteredUsers.length === 0) return []
-    const start = (page - 1) * pageSize
-    const end = start + pageSize
-    return debouncedQ ? filteredUsers.slice(start, end) : filteredUsers
-  }, [filteredUsers, page, pageSize, debouncedQ])
-
-  const adminUsers = useMemo(() => pagedUsers.filter((u) => u.role === 'ADMIN'), [pagedUsers])
-  const tutorUsers = useMemo(() => pagedUsers.filter((u) => u.role === 'TUTOR'), [pagedUsers])
-  const studentUsers = useMemo(() => pagedUsers.filter((u) => u.role === 'STUDENT'), [pagedUsers])
+  const adminUsers = useMemo(
+    () => filteredUsers.filter((u) => u.role === 'ADMIN'),
+    [filteredUsers],
+  )
+  const tutorUsers = useMemo(
+    () => filteredUsers.filter((u) => u.role === 'TUTOR'),
+    [filteredUsers],
+  )
+  const studentUsers = useMemo(
+    () => filteredUsers.filter((u) => u.role === 'STUDENT'),
+    [filteredUsers],
+  )
 
   // Row actions
   // removed: changeRole (role change via dropdown) as per new requirement
@@ -619,7 +633,7 @@ const ManageUsers = () => {
             <span className="text-gray-600">Search</span>
             <input
               value={q}
-              onChange={(e) => { setQ(e.target.value); setPage(1) }}
+              onChange={(e) => { setQ(e.target.value); goToPage(1) }}
               placeholder="Type Here"
               className="h-[30px] w-full sm:w-[220px] flex-1 min-w-0 rounded-[3px] border border-gray-500 px-2 text-sm text-gray-600 bg-white focus:outline-none ml-2"
               aria-label="Search"
@@ -678,32 +692,13 @@ const ManageUsers = () => {
           )}
         </div>
         {/* Pagination footer inside card but outside the horizontal scroller */}
-        <div className="mt-4 flex items-center justify-between px-2 sm:px-0">
-          <div className="text-gray-600 text-sm">
-            Page {page} of {totalPages} • Total {filteredUsers.length} Data
-          </div>
-          <div className="inline-flex items-center gap-2">
-            <button
-              type="button"
-              className="px-3 py-1 rounded-md border border-gray-300 text-gray-700 bg-white disabled:opacity-50"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              Prev
-            </button>
-            <span className="px-3 py-1 rounded-md bg-[#d8f0e3] text-[#007a33] border border-transparent">
-              {page}
-            </span>
-            <button
-              type="button"
-              className="px-3 py-1 rounded-md border border-gray-300 text-gray-700 bg-white disabled:opacity-50"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          label={`Page ${page} of ${totalPages} • Total ${total} Data`}
+          onPageChange={goToPage}
+          className="mt-4 px-2 sm:px-0"
+        />
       </SurfaceCard>
 
       {/* Create User Modal */}

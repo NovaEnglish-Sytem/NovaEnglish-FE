@@ -48,7 +48,7 @@ export const DashboardLayout = ({
               useExternalLogoutConfirm={useExternalLogoutConfirm}
             />
           </div>
-          <div className="min-w-0 flex-1 flex flex-col h-full overflow-y-auto tutor-scroll">
+          <div className="min-w-0 flex-1 flex flex-col h-full overflow-y-auto tutor-scroll" data-dashboard-scroll="true">
             <section className={['min-w-0 px-6', contentClassName].filter(Boolean).join(' ')}>
               {children}
             </section>

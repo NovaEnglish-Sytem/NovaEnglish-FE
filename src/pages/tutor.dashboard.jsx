@@ -124,7 +124,7 @@ export const TutorDashboard = () => {
       value: dashboardData?.testAttemptsThisMonth ?? 'N/A'
     },
     {
-      title: 'Most Common Band Score',
+      title: 'Most Common Best Score',
       value: dashboardData?.mostCommonStudentLevel ?? 'N/A'
     }
   ]

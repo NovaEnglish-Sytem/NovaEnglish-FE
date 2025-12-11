@@ -16,6 +16,7 @@ import EmptyState from '../components/organisms/EmptyState.jsx'
 import { useDelayedSpinner } from '../hooks/useDelayedSpinner.js'
 import { Spinner } from '../components/atoms/Spinner.jsx'
 import { useActiveTestSession } from '../hooks/useActiveTestSession.js'
+import Pagination from '../components/molecules/Pagination.jsx'
 
 export const StudentTestRecord = () => {
   const navigate = useNavigate()
@@ -110,6 +111,19 @@ export const StudentTestRecord = () => {
     })()
     return () => { mounted = false }
   }, [page, pageSize])
+
+  const scrollToTop = () => {
+    try {
+      window.scrollTo({ top: 0 })
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  const goToPage = (nextPage) => {
+    scrollToTop()
+    setPage(nextPage)
+  }
 
   // Loading state
   if (loading && records.length === 0) {
@@ -241,46 +255,13 @@ export const StudentTestRecord = () => {
                     ))}
                   </div>
                 )}
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Page {page} of {totalPages} • Total {total} Records
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-                    >
-                      Prev
-                    </button>
-                    {Array.from({ length: totalPages || 1 }).slice(0, 7).map((_, i) => {
-                      const p = i + 1
-                      const isActive = p === page
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setPage(p)}
-                          className={[
-                            'px-3 py-1 rounded border border-[#ececec]',
-                            isActive ? 'bg-[#e6f5e9] text-[#007a33] font-semibold' : ''
-                          ].join(' ')}
-                        >
-                          {p}
-                        </button>
-                      )
-                    })}
-                    <button
-                      type="button"
-                      disabled={page >= totalPages}
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      className="px-3 py-1 rounded border border-[#ececec] disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  label={`Page ${page} of ${totalPages} • Total ${total} Records`}
+                  onPageChange={goToPage}
+                  className="mt-6"
+                />
               </>
             )}
           </div>

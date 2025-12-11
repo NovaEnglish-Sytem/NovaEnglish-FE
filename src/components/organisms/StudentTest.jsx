@@ -66,7 +66,7 @@ export const StudentTest = ({
           <div 
             className={[
               isScrollable 
-                ? 'grid grid-cols-1 gap-6 max-h-[650px] overflow-y-auto md:max-h-none md:overflow-y-visible md:flex md:flex-row md:flex-nowrap md:overflow-x-auto md:gap-6 md:pb-4 md:pr-1 scroll-smooth' 
+                ? 'grid grid-cols-1 gap-6 max-h-[320px] overflow-y-auto tutor-scroll md:max-h-none md:overflow-y-visible md:flex md:flex-row md:flex-nowrap md:overflow-x-auto md:gap-6 md:pb-4 md:pr-1 scroll-smooth' 
                 : 'grid grid-cols-1 md:grid-cols-3 gap-6'
             ].join(' ')}
           >

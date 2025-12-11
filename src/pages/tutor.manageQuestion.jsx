@@ -52,6 +52,7 @@ export const TutorManageQuestions = () => {
   const [editingCategory, setEditingCategory] = useState(null) // {id, name} when editing
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false)
   const [pendingName, setPendingName] = useState('')
+  const [savingCategory, setSavingCategory] = useState(false)
 
   const showInitialLoading = useDelayedSpinner(loading, 700)
 
@@ -260,13 +261,24 @@ export const TutorManageQuestions = () => {
 
       <ConfirmDialog
         isOpen={confirmSaveOpen}
-        onClose={() => { setConfirmSaveOpen(false); setPendingName(''); setIsModalOpen(false) }}
-        onConfirm={async () => { setConfirmSaveOpen(false); await doSaveCategory(pendingName); setPendingName('') }}
+        onClose={() => { if (!savingCategory) { setConfirmSaveOpen(false); setPendingName(''); setIsModalOpen(false) } }}
+        onConfirm={async () => {
+          if (!pendingName || savingCategory) return
+          setSavingCategory(true)
+          try {
+            await doSaveCategory(pendingName)
+            setConfirmSaveOpen(false)
+            setPendingName('')
+          } finally {
+            setSavingCategory(false)
+          }
+        }}
         title={modalMode === 'edit' ? 'Confirm Rename' : 'Confirm Save'}
         message={modalMode === 'edit' ? `Rename category to "${pendingName}"?` : `Save new category "${pendingName}"?`}
         type="warning"
         confirmText="Save"
         cancelText="Cancel"
+        isLoading={savingCategory}
       />
     </DashboardLayout>
   )
