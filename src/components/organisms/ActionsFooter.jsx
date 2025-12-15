@@ -21,7 +21,7 @@ const ActionsFooter = ({ onCancel, onSaveDraft, onPreview, onPublish, onUnpublis
   }, [saveStatus, lastSavedAt, hasUnsavedChanges])
 
   return (
-    <div className="sticky bottom-0 border-t border-gray-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 px-4 py-3 rounded-b-[12px]">
+    <div className="border-t border-gray-100 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 px-4 py-3 rounded-b-[12px] sm:sticky sm:bottom-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
         <div className="text-xs text-gray-500 min-h-[20px]">
           {statusText}

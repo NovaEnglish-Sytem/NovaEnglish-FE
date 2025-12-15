@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Header } from '../components/organisms/Header.jsx'
 import { Sidebar } from '../components/organisms/Sidebar.jsx'
@@ -21,6 +21,50 @@ export const DashboardLayout = ({
   logoTo = ROUTES.dashboardTutor,
   children,
 }) => {
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false)
+  const scrollContainerRef = useRef(null)
+
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+
+    let lastScrollTop = 0
+
+    const handleScroll = () => {
+      const isMobile = window.innerWidth < 768 // Tailwind md breakpoint
+      const current = el.scrollTop || 0
+
+      if (!isMobile) {
+        setIsHeaderHidden(false)
+        lastScrollTop = current
+        return
+      }
+
+      const diff = current - lastScrollTop
+      const threshold = 4
+      if (Math.abs(diff) < threshold) {
+        lastScrollTop = current
+        return
+      }
+
+      if (diff > 0 && current > 0) {
+        // Scroll down
+        setIsHeaderHidden(true)
+      } else if (diff < 0) {
+        // Scroll up
+        setIsHeaderHidden(false)
+      }
+
+      lastScrollTop = current
+    }
+
+    el.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      el.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   return (
     <div
       className={[
@@ -36,9 +80,22 @@ export const DashboardLayout = ({
           fullWidthBg={headerFullWidthBg}
           logoTo={logoTo}
           responsiveContainerBg={responsiveContainerBg}
+          className={[
+            'transition-transform duration-300',
+            isHeaderHidden ? '-translate-y-full' : 'translate-y-0',
+            'md:translate-y-0 md:transition-none',
+          ].join(' ')}
         />
         {/* <div className="grid justify-items-center [align-items:start]"> */}
-      <div className="flex items-start justify-center h-[calc(100vh-100px)]">
+      <div
+        className={[
+          'flex items-start justify-center',
+          isHeaderHidden ? 'h-screen -mt-[100px]' : 'h-[calc(100vh-100px)]',
+          'md:h-[calc(100vh-100px)] md:mt-0',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <div className="bg-neutral-100 max-w-[1440px] w-full box-border flex items-stretch lg:border-r-3 lg:border-[#e5e5e5] h-full">
           <div className="hidden lg:block h-full">
             <Sidebar
@@ -48,7 +105,11 @@ export const DashboardLayout = ({
               useExternalLogoutConfirm={useExternalLogoutConfirm}
             />
           </div>
-          <div className="min-w-0 flex-1 flex flex-col h-full overflow-y-auto tutor-scroll" data-dashboard-scroll="true">
+          <div
+            ref={scrollContainerRef}
+            className="min-w-0 flex-1 flex flex-col h-full overflow-y-auto tutor-scroll"
+            data-dashboard-scroll="true"
+          >
             <section className={['min-w-0 px-6', contentClassName].filter(Boolean).join(' ')}>
               {children}
             </section>
