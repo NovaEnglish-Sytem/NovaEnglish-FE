@@ -921,7 +921,7 @@ export const TutorCreateQuestions = () => {
 
           {/* Create Tab Content */}
           {activeTab === 'create' && (
-            <div className="p-4 space-y-6">
+            <div className="py-4 px-2 space-y-6">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 {/* Back button - hidden on mobile, visible on sm+ */}
