@@ -31,11 +31,18 @@ const Pagination = ({
   const canNext = currentPage < safeTotalPages
 
   return (
-    <div className={['flex items-center justify-between', className].filter(Boolean).join(' ')}>
+    <div
+      className={[
+        'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className="text-sm text-gray-600">
         {label}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={() => handleChange(currentPage - 1)}

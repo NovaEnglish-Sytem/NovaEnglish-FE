@@ -280,15 +280,6 @@ export const ResultPage = () => {
                     {isEditingFeedback ? (
                       <>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full sm:w-auto sm:min-w-[90px]"
-                          onClick={handleCancelEdit}
-                          disabled={savingFeedback}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
                           variant="primary"
                           size="sm"
                           className="w-full sm:w-auto sm:min-w-[90px]"
@@ -296,6 +287,15 @@ export const ResultPage = () => {
                           disabled={savingFeedback}
                         >
                           Save
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full sm:w-auto sm:min-w-[90px]"
+                          onClick={handleCancelEdit}
+                          disabled={savingFeedback}
+                        >
+                          Cancel
                         </Button>
                       </>
                     ) : (

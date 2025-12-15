@@ -208,7 +208,7 @@ export const TutorManageQuestionsDetail = () => {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 w-max cursor-pointer"
+            className="hidden md:flex items-center gap-2 text-gray-600 hover:text-gray-800 w-max cursor-pointer"
             aria-label="Back"
           >
             <HiArrowLeft className="w-5 h-5" />

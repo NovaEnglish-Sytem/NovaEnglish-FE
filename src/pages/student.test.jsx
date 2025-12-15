@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react'
 import ShortAnswerInline from '../components/molecules/ShortAnswerInline.jsx'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { testApi } from '../lib/api.js'
+import { testApi, studentApi } from '../lib/api.js'
 // Lazy-load heavy components
 const AudioPlayerMinimal = React.lazy(() => import('../components/molecules/AudioPlayerMinimal.jsx'))
 import { classes } from '../config/theme/tokens.js'
@@ -704,11 +704,64 @@ export const StudentTestPage = () => {
     try {
       setLoading(true)
       setError(null)
-      
-      // Get stored session token
+
+      // Extra safety: check for active test session first so we can
+      // avoid calling /api/test/[id] when the session is already
+      // cleaned up (completed/expired). This prevents unnecessary
+      // 403 errors in the browser console when users hit Back to an
+      // old test URL.
+      let activeAttemptId = null
+      let sessionChecked = false
+      try {
+        const sessionRes = await studentApi.checkActiveSession()
+        if (sessionRes?.ok) {
+          sessionChecked = true
+          const { activeSession, autoSubmitted } = sessionRes.data || {}
+
+          // Cleanup localStorage for auto-submitted attempts (same
+          // behaviour as useActiveTestSession hook).
+          if (autoSubmitted?.finalizedAttemptIds?.length > 0) {
+            autoSubmitted.finalizedAttemptIds.forEach((finalId) => {
+              try {
+                TestStorage.clearLocal(finalId)
+                sessionStorage.removeItem('last_valid_attemptId')
+              } catch (_) {}
+            })
+          }
+
+          if (activeSession && !activeSession.isExpired) {
+            activeAttemptId = activeSession.attemptId
+          }
+        }
+      } catch (_) {
+        // If the session check fails (network/auth), fall back to the
+        // original behaviour and let testApi.get handle it.
+      }
+
+      if (sessionChecked) {
+        // No active session at all – this test has been completed or
+        // cleaned up. Redirect straight to dashboard without hitting
+        // /api/test/[id].
+        if (!activeAttemptId) {
+          setRedirecting(true)
+          navigate(ROUTES.studentDashboard, { replace: true })
+          return
+        }
+
+        // Active session exists but belongs to a different attempt –
+        // redirect to the currently active test instead of calling
+        // /api/test for the wrong attempt.
+        if (activeAttemptId && activeAttemptId !== attemptId) {
+          setRedirecting(true)
+          navigate(ROUTES.studentTest.replace(':attemptId', encodeURIComponent(activeAttemptId)), { replace: true })
+          return
+        }
+      }
+
+      // Get stored session token for the (now confirmed) active attempt
       const storedToken = TestStorage.getSessionToken(attemptId)
       const res = await testApi.get(attemptId, storedToken)
-      
+
       // Check if API call failed
       if (!res.ok) {
         const errorData = res.data

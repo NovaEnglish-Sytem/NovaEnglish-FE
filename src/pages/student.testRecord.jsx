@@ -178,15 +178,7 @@ export const StudentTestRecord = () => {
       <div className="max-w-[1310px] mx-auto px-4 my-20 md:px-0">
         <div className={[classes.surfaceCard, 'px-6 pt-10 pb-12'].join(' ')}>
           <div className="grid grid-cols-3 items-center pb-6 md:pb-10">
-            <button
-              type="button"
-              onClick={safeBack}
-              className="hidden md:inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer"
-              aria-label="Back"
-            >
-              <HiArrowLeft className="w-5 h-5" />
-              <span>Back</span>
-            </button>
+            <div className="hidden md:block" />
 
             <h1 className="col-span-3 md:col-span-1 md:col-start-2 justify-self-center text-xl md:text-2xl font-semibold text-gray-700 underline text-center">Test Record</h1>
 
