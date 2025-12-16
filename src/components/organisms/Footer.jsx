@@ -227,7 +227,6 @@ export const Footer = ({
         <div className="mt-8 border-t border-black/10 pt-4 text-center">
           <p className="text-sm">
             © 2025 Nova English. All rights reserved. <br/>
-            <span className="text-gray-500 ml-2"> v1.00</span>
           </p>
         </div>
       </div>

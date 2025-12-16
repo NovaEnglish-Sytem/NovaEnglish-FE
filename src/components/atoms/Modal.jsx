@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
 
 export const Modal = ({
@@ -62,7 +63,7 @@ export const Modal = ({
 
   if (!isOpen) return null;
 
-  return (
+  const content = (
     <div
       className={[
         "fixed inset-0 z-50 flex items-center justify-center p-4",
@@ -98,6 +99,8 @@ export const Modal = ({
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(content, document.body);
 };
 
 Modal.propTypes = {
