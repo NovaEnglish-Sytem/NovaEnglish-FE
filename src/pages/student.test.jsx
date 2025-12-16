@@ -66,10 +66,12 @@ export const StudentTestPage = () => {
   
   // Current test state
   const [categoryName, setCategoryName] = useState('')
-  // Timer: managed by useTimer; onExpired => show expired modal
+  const [isExpiredLocked, setIsExpiredLocked] = useState(false)
+  // Timer: managed by useTimer; onExpired => lock UI + show expired modal
   const { remainingSeconds, setRemaining: setRemainingSeconds } = useTimer(null, () => {
     if (!submittingRef.current) {
       stopAllAudio()
+      setIsExpiredLocked(true)
       expiredModal.start()
     }
   })
@@ -1281,6 +1283,10 @@ export const StudentTestPage = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/10 backdrop-blur-sm">
           <LoadingState message="Please wait..." fullPage={false} minHeight="min-h-[0]" />
         </div>
+      )}
+
+      {isExpiredLocked && !submitting && (
+        <div className="fixed inset-0 z-[90] bg-transparent" />
       )}
 
       <ConfirmDialog
