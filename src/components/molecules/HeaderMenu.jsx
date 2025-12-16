@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { HiOutlineMenu } from 'react-icons/hi'
 import { FiLogOut } from 'react-icons/fi'
@@ -105,10 +106,11 @@ export const HeaderMenu = ({ items = [], onLogout = null, className = '', role='
         confirmText="Logout"
         cancelText="Cancel"
       />)}
-      {loggingOut && (
+      {loggingOut && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[100] bg-white/70 backdrop-blur-sm flex items-center justify-center">
           <LoadingState message="Signing out..." size="md" fullPage />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
