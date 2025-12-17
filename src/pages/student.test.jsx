@@ -1286,7 +1286,7 @@ export const StudentTestPage = () => {
       )}
 
       {isExpiredLocked && !submitting && (
-        <div className="fixed inset-0 z-[90] bg-transparent" />
+        <div className="fixed inset-0 z-[40] bg-transparent" />
       )}
 
       <ConfirmDialog
@@ -1298,6 +1298,7 @@ export const StudentTestPage = () => {
         message={`${TEST_MESSAGES.EXPIRED_MESSAGE}\n\nAuto closing in ${(expiredModal.countdown ?? TEST_CONFIG.MODAL.COUNTDOWN_START)}s…`}
         confirmText={TEST_MESSAGES.ACTION_OK}
         cancelText=""
+        closeOnBackdrop={false}
       />
 
       <ConfirmDialog
@@ -1309,6 +1310,7 @@ export const StudentTestPage = () => {
         message={`${TEST_MESSAGES.DRAFT_MESSAGE}\n\nAuto closing in ${(draftModal.countdown ?? TEST_CONFIG.MODAL.COUNTDOWN_START)}s…`}
         confirmText={TEST_MESSAGES.ACTION_OK}
         cancelText=""
+        closeOnBackdrop={false}
       />
 
       {/* Image Preview Modal */}

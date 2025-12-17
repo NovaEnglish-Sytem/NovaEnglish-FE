@@ -16,6 +16,7 @@ export const ConfirmDialog = ({
   confirmVariant,
   isLoading = false,
   className = '',
+  closeOnBackdrop = true,
 }) => {
   // Icon mapping based on type (using react-icons)
   const getIcon = () => {
@@ -111,6 +112,7 @@ export const ConfirmDialog = ({
       backdropClassName="backdrop-blur-none bg-transparent"
       ariaLabelledby={titleId}
       ariaDescribedby={descId}
+      closeOnBackdrop={closeOnBackdrop}
     >
       {/* Close button (top-right) */}
       <button
@@ -192,6 +194,7 @@ ConfirmDialog.propTypes = {
   confirmVariant: PropTypes.string,
   isLoading: PropTypes.bool,
   className: PropTypes.string,
+  closeOnBackdrop: PropTypes.bool,
 }
 
 export default ConfirmDialog
