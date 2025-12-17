@@ -34,7 +34,12 @@ export const DashboardLayout = ({
       const isMobile = window.innerWidth < 768 // Tailwind md breakpoint
       const current = el.scrollTop || 0
 
-      if (!isMobile) {
+      const viewportHeight = el.clientHeight
+      const scrollDelta = el.scrollHeight - viewportHeight
+      const minScrollableDistance = viewportHeight // require at least one extra "screen" of content
+      const canScrollVertically = scrollDelta > minScrollableDistance
+
+      if (!isMobile || !canScrollVertically) {
         setIsHeaderHidden(false)
         lastScrollTop = current
         return
