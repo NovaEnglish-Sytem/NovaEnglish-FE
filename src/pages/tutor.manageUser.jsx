@@ -270,14 +270,11 @@ const ManageUsers = () => {
       if (!t) errs.placeOfBirth = 'Place of Birth is required.'
       else if (t.length < 3) errs.placeOfBirth = 'Place of Birth must be at least 3 characters.'
     }
-    // date of birth required and min age 5
+    // date of birth required
     if (!createForm.dateOfBirth) {
       errs.dateOfBirth = 'Date of Birth is required.'
-    } else {
-      const dob = new Date(createForm.dateOfBirth)
-      const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-      if (dob > min) errs.dateOfBirth = 'Minimum age is 5 years.'
     }
+
     // gender required
     if (!createForm.gender) {
       errs.gender = 'Please select gender.'
@@ -389,11 +386,8 @@ const ManageUsers = () => {
     }
     if (!editForm.dateOfBirth) {
       errs.dateOfBirth = 'Date of Birth is required.'
-    } else {
-      const dob = new Date(editForm.dateOfBirth)
-      const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-      if (dob > min) errs.dateOfBirth = 'Minimum age is 5 years.'
     }
+
     if (!editForm.gender) {
       errs.gender = 'Please select gender.'
     }

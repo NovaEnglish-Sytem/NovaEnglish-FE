@@ -130,11 +130,6 @@ export default function AccountSettings() {
       case 'dateOfBirth': {
         const v = formData.dateOfBirth
         if (!v) res = { valid: false, message: 'Date of Birth is required.' }
-        else {
-          const dob = new Date(v)
-          const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-          if (dob > min) res = { valid: false, message: 'Minimum age is 5 years.' }
-        }
         break
       }
       case 'gender': {
@@ -173,15 +168,9 @@ export default function AccountSettings() {
         nextErrors.placeOfBirth = 'Place of Birth must be at least 3 characters.'
       }
     }
-    // Date of birth required and must be at least 5 years ago
+    // Date of birth required
     if (!formData.dateOfBirth) {
       nextErrors.dateOfBirth = 'Date of Birth is required.'
-    } else {
-      const dob = new Date(formData.dateOfBirth)
-      const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-      if (dob > min) {
-        nextErrors.dateOfBirth = 'Minimum age is 5 years.'
-      }
     }
     // Gender required and valid
     if (!formData.gender || !['MALE', 'FEMALE'].includes(String(formData.gender).toUpperCase())) {
@@ -267,10 +256,6 @@ export default function AccountSettings() {
 
     if (!formData.dateOfBirth) {
       nextErrors.dateOfBirth = 'Date of Birth is required.'
-    } else {
-      const dob = new Date(formData.dateOfBirth)
-      const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-      if (dob > min) nextErrors.dateOfBirth = 'Minimum age is 5 years.'
     }
 
     if (!formData.gender || !['MALE', 'FEMALE'].includes(String(formData.gender).toUpperCase())) {

@@ -61,10 +61,6 @@ const UserFormModal = ({
     // date of birth
     if (!form.dateOfBirth) {
       errs.dateOfBirth = 'Date of Birth is required.'
-    } else {
-      const dob = new Date(form.dateOfBirth)
-      const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-      if (dob > min) errs.dateOfBirth = 'Minimum age is 5 years.'
     }
 
     // gender
@@ -188,12 +184,10 @@ const UserFormModal = ({
               value={form.dateOfBirth}
               onChange={(v) => {
                 setForm((p) => ({ ...p, dateOfBirth: v }))
-                if (v) {
-                  const dob = new Date(v)
-                  const min = new Date(); min.setFullYear(min.getFullYear() - 5)
-                  setErrors((prev) => ({ ...prev, dateOfBirth: dob > min ? 'Minimum age is 5 years.' : '' }))
-                } else {
+                if (!v) {
                   setErrors((prev) => ({ ...prev, dateOfBirth: 'Date of Birth is required.' }))
+                } else {
+                  setErrors((prev) => ({ ...prev, dateOfBirth: '' }))
                 }
               }}
               onBlur={() => {
