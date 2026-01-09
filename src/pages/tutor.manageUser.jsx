@@ -582,7 +582,7 @@ const ManageUsers = () => {
   if (isLoading) {
     return (
       <DashboardLayout
-        rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} />}
+        rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} displayRole="ADMIN" />}
         sidebarItems={navigationItems}
         onLogout={handleLogout}
       >
@@ -613,7 +613,7 @@ const ManageUsers = () => {
 
   return (
     <DashboardLayout
-      rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} />}
+      rightHeaderSlot={<TutorHeaderRight items={navigationItems} onLogout={handleLogout} displayRole="ADMIN" />}
       sidebarItems={navigationItems}
       onLogout={handleLogout}
     >
